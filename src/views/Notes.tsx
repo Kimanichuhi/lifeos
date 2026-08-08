@@ -12,7 +12,6 @@ export function Notes() {
   const [query, setQuery] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [editing, setEditing] = useState<Note | null>(null);
-  const toast = useToast();
 
   const filtered = useMemo(() => {
     if (!notes) return [];
@@ -25,20 +24,11 @@ export function Notes() {
     return [...list].sort((a, b) => Number(b.pinned) - Number(a.pinned) || (b.updated_at < a.updated_at ? -1 : 1));
   }, [notes, query]);
 
-  async function togglePin(n: Note) {
-    await updateNote(n.id, { pinned: !n.pinned });
-  }
-
-  async function remove(id: string) {
-    await deleteNote(id);
-    toast.success('Note deleted');
-  }
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6 gap-3">
         <div className="min-w-0">
-          <h2 className="font-display font-bold text-2xl">Notes</h2>
+          <h2 className="view-title">Notes</h2>
           <p className="text-sm text-slate-400">Your second brain — ideas, research, anything.</p>
         </div>
         <button onClick={() => setShowNew(true)} className="btn-primary shrink-0">

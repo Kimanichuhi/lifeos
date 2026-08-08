@@ -9,18 +9,19 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast';
 import { Modal } from '@/components/Modal';
 import {
-  encryptString, decryptString, encryptFile, decryptToFile,
+  encryptString, decryptString, encryptFileToBlob, decryptBlobToFile, decryptToFile,
 } from '@/lib/crypto';
+import { uploadVaultFile, downloadVaultFile, deleteVaultFile, newVaultFilePath } from '@/lib/vaultStorage';
 
 type VaultCategory = 'password' | 'api_key' | 'document' | 'picture' | 'note';
 
 interface VaultItem {
   id: string;
-  title: string;
   encrypted_title: string | null;
   title_iv: string | null;
   category: VaultCategory;
-  encrypted_data: string;
+  encrypted_data: string | null;
+  storage_path: string | null;
   iv: string;
   metadata: Record<string, unknown>;
   created_at: string;
@@ -59,7 +60,7 @@ export function Vault() {
     if (error) { toast.error('Could not load vault'); setLoading(false); return; }
     // Decrypt titles client-side
     const enriched = await Promise.all((data ?? []).map(async (item: VaultItem) => {
-      let decryptedTitle = item.title;
+      let decryptedTitle = 'Untitled';
       if (item.encrypted_title && item.title_iv && vaultKey) {
         try {
           decryptedTitle = await decryptString({ ciphertext: item.encrypted_title, iv: item.title_iv }, vaultKey);
@@ -71,8 +72,9 @@ export function Vault() {
     setLoading(false);
   }
 
-  async function remove(id: string) {
-    await supabase.from('vault_items').delete().eq('id', id);
+  async function remove(item: VaultItem) {
+    if (item.storage_path) await deleteVaultFile(item.storage_path);
+    await supabase.from('vault_items').delete().eq('id', item.id);
     loadItems();
     toast.success('Item deleted from vault');
   }
@@ -90,7 +92,7 @@ export function Vault() {
             <Lock size={28} />
           </div>
           <h2 className="font-display font-bold text-xl mb-2">Vault is locked</h2>
-          <p className="text-sm text-slate-400">Unlock with your PIN to access your encrypted vault.</p>
+          <p className="text-sm text-slate-400">Sign in to access your encrypted vault.</p>
         </div>
       </div>
     );
@@ -100,7 +102,7 @@ export function Vault() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display font-bold text-2xl flex items-center gap-2">
+          <h2 className="view-title flex items-center gap-2">
             <Shield size={22} className="text-accent-500" /> Vault
           </h2>
           <p className="text-sm text-slate-400">Encrypted with AES-256. Only you can decrypt — not even the server.</p>
@@ -156,7 +158,7 @@ export function Vault() {
                     </p>
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); remove(item.id); }}
+                    onClick={(e) => { e.stopPropagation(); remove(item); }}
                     className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100"
                   >
                     <Trash2 size={14} />
@@ -222,31 +224,36 @@ function NewVaultItemModal({ open, onClose, vaultKey, onSaved }: {
     }
     setSaving(true);
     try {
-      let encrypted: { ciphertext: string; iv: string };
-      let metadata: Record<string, unknown> = {};
-      if (category === 'password') {
-        const payload = JSON.stringify({ content, username, url });
-        encrypted = await encryptString(payload, vaultKey);
-        metadata = { hasUsername: !!username, hasUrl: !!url };
-      } else if (category === 'api_key') {
-        encrypted = await encryptString(content, vaultKey);
-      } else if (category === 'note') {
-        encrypted = await encryptString(content, vaultKey);
-      } else {
-        encrypted = await encryptFile(file!, vaultKey);
-        metadata = { mimeType: file!.type, fileName: file!.name, fileSize: file!.size };
-      }
-      // Encrypt the title too — store a generic label in plaintext
       const encTitle = await encryptString(title.trim(), vaultKey);
-      const { error } = await supabase.from('vault_items').insert({
-        title: 'Encrypted item',
+      const row: Record<string, unknown> = {
         encrypted_title: encTitle.ciphertext,
         title_iv: encTitle.iv,
         category,
-        encrypted_data: encrypted.ciphertext,
-        iv: encrypted.iv,
-        metadata,
-      });
+      };
+
+      if (category === 'password') {
+        const payload = JSON.stringify({ content, username, url });
+        const encrypted = await encryptString(payload, vaultKey);
+        row.encrypted_data = encrypted.ciphertext;
+        row.iv = encrypted.iv;
+        row.metadata = { hasUsername: !!username, hasUrl: !!url };
+      } else if (category === 'api_key' || category === 'note') {
+        const encrypted = await encryptString(content, vaultKey);
+        row.encrypted_data = encrypted.ciphertext;
+        row.iv = encrypted.iv;
+      } else {
+        // Documents/pictures: upload the ciphertext to Storage rather than
+        // inlining base64 in the table — only the path is stored here.
+        const { blob, iv } = await encryptFileToBlob(file!, vaultKey);
+        const path = newVaultFilePath();
+        const { error: upErr } = await uploadVaultFile(path, blob);
+        if (upErr) { toast.error('Could not upload file'); return; }
+        row.storage_path = path;
+        row.iv = iv;
+        row.metadata = { mimeType: file!.type, fileName: file!.name, fileSize: file!.size };
+      }
+
+      const { error } = await supabase.from('vault_items').insert(row);
       if (error) { toast.error('Could not save to vault'); return; }
       toast.success('Encrypted and saved to vault');
       setTitle(''); setContent(''); setUsername(''); setUrl(''); setFile(null);
@@ -364,15 +371,23 @@ function ViewVaultItemModal({ item, vaultKey, onClose }: {
     (async () => {
       try {
         if (item.category === 'password') {
-          const json = await decryptString({ ciphertext: item.encrypted_data, iv: item.iv }, vaultKey);
+          const json = await decryptString({ ciphertext: item.encrypted_data!, iv: item.iv }, vaultKey);
           setDecrypted(json);
         } else if (item.category === 'api_key' || item.category === 'note') {
-          const text = await decryptString({ ciphertext: item.encrypted_data, iv: item.iv }, vaultKey);
+          const text = await decryptString({ ciphertext: item.encrypted_data!, iv: item.iv }, vaultKey);
           setDecrypted(text);
         } else {
           const mime = (item.metadata.mimeType as string) ?? 'application/octet-stream';
-          const blob = await decryptToFile({ ciphertext: item.encrypted_data, iv: item.iv }, vaultKey, mime);
-          setBlobUrl(URL.createObjectURL(blob));
+          if (item.storage_path) {
+            const { data, error } = await downloadVaultFile(item.storage_path);
+            if (error || !data) throw error ?? new Error('download failed');
+            const blob = await decryptBlobToFile(data, item.iv, vaultKey, mime);
+            setBlobUrl(URL.createObjectURL(blob));
+          } else {
+            // Legacy rows created before files moved to Storage.
+            const blob = await decryptToFile({ ciphertext: item.encrypted_data!, iv: item.iv }, vaultKey, mime);
+            setBlobUrl(URL.createObjectURL(blob));
+          }
         }
       } catch {
         setError('Decryption failed. Your vault key may not match.');

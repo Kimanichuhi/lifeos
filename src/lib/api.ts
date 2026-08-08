@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import type {
   AiConversation, AiMessage, AiMemory, CalendarEvent, Goal, Habit, HabitLog,
-  JournalEntry, Note, Project, Task,
+  JournalEntry, Note, Project, Snippet, Task,
 } from './types';
 
 // ---------- Tasks ----------
@@ -124,4 +124,18 @@ export async function touchConversation(id: string) {
   return supabase.from('ai_conversations').update({ updated_at: new Date().toISOString() }).eq('id', id);
 }
 
-export type { AiConversation, AiMessage, AiMemory, CalendarEvent, Goal, Habit, HabitLog, JournalEntry, Note, Project, Task };
+// ---------- Snippets ----------
+export async function getSnippets() {
+  return supabase.from('snippets').select('*').order('updated_at', { ascending: false });
+}
+export async function createSnippet(input: Partial<Snippet>) {
+  return supabase.from('snippets').insert(input).select().single();
+}
+export async function updateSnippet(id: string, patch: Partial<Snippet>) {
+  return supabase.from('snippets').update(patch).eq('id', id);
+}
+export async function deleteSnippet(id: string) {
+  return supabase.from('snippets').delete().eq('id', id);
+}
+
+export type { AiConversation, AiMessage, AiMemory, CalendarEvent, Goal, Habit, HabitLog, JournalEntry, Note, Project, Snippet, Task };

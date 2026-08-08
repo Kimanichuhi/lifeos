@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, ChevronRight, Sparkles, Save, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Save, Star } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { getJournalByDate, upsertJournal } from '@/lib/api';
 import { useToast } from '@/lib/toast';
@@ -69,7 +69,7 @@ export function Journal() {
         </button>
       </div>
 
-      <h2 className="font-display font-bold text-2xl mb-1">{displayDate}</h2>
+      <h2 className="view-title mb-1">{displayDate}</h2>
       <p className="text-sm text-slate-400 mb-6">Capture your morning intentions and evening reflections.</p>
 
       {loading ? (

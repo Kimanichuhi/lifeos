@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Search, Home, Bot, BookOpen, Calendar, CheckSquare, Target, Flame,
-  FolderKanban, StickyNote, FileText, Wallet, BarChart3, Settings,
+  FolderKanban, StickyNote, FileText, Wallet, BarChart3, Settings, Code2,
   CornerDownLeft, ArrowUp, ArrowDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -52,6 +52,7 @@ export function CommandPalette({
       { key: 'documents', label: 'Documents', icon: FileText },
       { key: 'finance', label: 'Finance', icon: Wallet },
       { key: 'analytics', label: 'Analytics', icon: BarChart3 },
+      { key: 'dev', label: 'Dev', icon: Code2 },
       { key: 'settings', label: 'Settings', icon: Settings },
     ];
     const list: CommandItem[] = [

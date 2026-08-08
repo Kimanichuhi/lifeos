@@ -92,6 +92,37 @@
   .label {
     @apply text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500;
   }
+  .view-title {
+    @apply font-display font-bold text-2xl;
+    background-image: linear-gradient(135deg, rgb(var(--accent-600)), rgb(var(--accent-400)) 60%, rgb(var(--accent-300)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Snippet syntax highlighting (Prism tokens), styled to match the app's
+     palette instead of importing a stock Prism theme. */
+  .snippet-code {
+    @apply font-mono text-[13px] leading-relaxed text-slate-700 dark:text-slate-300;
+  }
+  .snippet-code .token.comment,
+  .snippet-code .token.prolog,
+  .snippet-code .token.doctype { @apply text-slate-400 dark:text-slate-500 italic; }
+  .snippet-code .token.string,
+  .snippet-code .token.attr-value { @apply text-emerald-600 dark:text-emerald-400; }
+  .snippet-code .token.number,
+  .snippet-code .token.boolean,
+  .snippet-code .token.constant { @apply text-amber-600 dark:text-amber-400; }
+  .snippet-code .token.keyword,
+  .snippet-code .token.selector,
+  .snippet-code .token.at-rule { @apply text-violet-600 dark:text-violet-400; }
+  .snippet-code .token.function,
+  .snippet-code .token.class-name { @apply text-accent-600 dark:text-accent-300; }
+  .snippet-code .token.tag,
+  .snippet-code .token.property,
+  .snippet-code .token.attr-name { @apply text-rose-600 dark:text-rose-400; }
+  .snippet-code .token.operator,
+  .snippet-code .token.punctuation { @apply text-slate-500 dark:text-slate-400; }
 }
 
 @layer utilities {

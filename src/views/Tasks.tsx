@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Check, Trash2, Flag, Calendar, Inbox, Circle, Clock, CheckCircle2, X } from 'lucide-react';
+import { Plus, Check, Trash2, Flag, Calendar, Inbox, Circle, Clock, CheckCircle2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { createTask, deleteTask, updateTask } from '@/lib/api';
 import { useTasks } from '@/lib/hooks';
@@ -61,7 +61,7 @@ export function Tasks() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display font-bold text-2xl">Tasks</h2>
+          <h2 className="view-title">Tasks</h2>
           <p className="text-sm text-slate-400">{tasks?.length ?? 0} total · {tasks?.filter((t) => t.status === 'completed').length ?? 0} done</p>
         </div>
         <button onClick={() => setShowNew(true)} className="btn-primary">

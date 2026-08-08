@@ -1,17 +1,14 @@
 import { create } from './tinyStore';
-import { deriveVaultKey, hashPin, verifyPin, exportVaultKey, importVaultKey } from './crypto';
+import { supabase } from './supabase';
+import { deriveVaultKey, reencryptVaultOnKeyChange, type VaultReencryptResult } from './crypto';
+import { logger } from './logger';
 
-const PIN_VERIFIER_KEY = 'lifeos-pin-verifier';
-const BIOMETRIC_PREF_KEY = 'lifeos-biometric-pref';
 const NOTIF_PREF_KEY = 'lifeos-notif-prefs';
-const VAULT_KEY_SESSION_KEY = 'lifeos-vault-key-jwk';
-const ATTEMPTS_KEY = 'lifeos-pin-attempts';
-const LOCKOUT_KEY = 'lifeos-pin-lockout';
 
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+// This is a single-owner app — only this account may ever sign in.
+const OWNER_EMAIL = 'kimanichuhi254@gmail.com';
 
-export type AuthStatus = 'uninitialized' | 'locked' | 'unlocked' | 'setup';
+export type AuthStatus = 'signed-out' | 'unlocked';
 
 export interface NotificationPrefs {
   enabled: boolean;
@@ -41,21 +38,16 @@ const DEFAULT_NOTIF: NotificationPrefs = {
 
 interface AuthState {
   status: AuthStatus;
+  email: string | null;
   vaultKey: CryptoKey | null;
-  biometricAvailable: boolean;
-  biometricPreferred: boolean;
+  busy: boolean;
   error: string | null;
   notifications: NotificationPrefs;
-  attempts: number;
-  lockedUntil: number | null;
-  setupPin: (pin: string) => Promise<void>;
-  unlock: (pin: string) => Promise<boolean>;
-  unlockWithBiometric: () => Promise<boolean>;
-  lock: () => void;
-  setBiometricPreferred: (v: boolean) => void;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  signOut: () => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<VaultReencryptResult | false>;
   setNotifications: (prefs: Partial<NotificationPrefs>) => void;
   clearError: () => void;
-  hasPin: () => boolean;
 }
 
 function loadNotifPrefs(): NotificationPrefs {
@@ -70,133 +62,67 @@ function saveNotifPrefs(p: NotificationPrefs) {
   localStorage.setItem(NOTIF_PREF_KEY, JSON.stringify(p));
 }
 
-function getAttempts(): number {
-  return parseInt(localStorage.getItem(ATTEMPTS_KEY) ?? '0', 10);
-}
-
-function setAttempts(n: number) {
-  localStorage.setItem(ATTEMPTS_KEY, String(n));
-}
-
-function getLockout(): number | null {
-  const v = localStorage.getItem(LOCKOUT_KEY);
-  return v ? parseInt(v, 10) : null;
-}
-
-function setLockout(until: number | null) {
-  if (until) localStorage.setItem(LOCKOUT_KEY, String(until));
-  else localStorage.removeItem(LOCKOUT_KEY);
-}
-
-function isLockedOut(): boolean {
-  const until = getLockout();
-  if (!until) return false;
-  if (Date.now() >= until) {
-    setLockout(null);
-    setAttempts(0);
-    return false;
-  }
-  return true;
-}
-
-function lockoutRemaining(): number {
-  const until = getLockout();
-  return until ? Math.ceil((until - Date.now()) / 1000) : 0;
-}
-
 export const useAuth = create<AuthState>((set, get) => ({
-  status: localStorage.getItem(PIN_VERIFIER_KEY) ? 'locked' : 'setup',
+  status: 'signed-out',
+  email: null,
   vaultKey: null,
-  biometricAvailable: typeof window !== 'undefined' && 'credentials' in navigator,
-  biometricPreferred: localStorage.getItem(BIOMETRIC_PREF_KEY) === 'true',
+  busy: false,
   error: null,
   notifications: loadNotifPrefs(),
-  attempts: getAttempts(),
-  lockedUntil: getLockout(),
 
-  hasPin: () => !!localStorage.getItem(PIN_VERIFIER_KEY),
-
-  setupPin: async (pin: string) => {
-    if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
-      set({ error: 'PIN must be exactly 6 digits.' });
-      return;
-    }
-    const verifier = await hashPin(pin);
-    localStorage.setItem(PIN_VERIFIER_KEY, verifier);
-    const key = await deriveVaultKey(pin);
-    // Cache the vault key as JWK for biometric (not the PIN itself)
-    const jwk = await exportVaultKey(key);
-    sessionStorage.setItem(VAULT_KEY_SESSION_KEY, jwk);
-    setAttempts(0);
-    setLockout(null);
-    set({ status: 'unlocked', vaultKey: key, error: null, attempts: 0, lockedUntil: null });
-  },
-
-  unlock: async (pin: string) => {
-    if (isLockedOut()) {
-      const rem = lockoutRemaining();
-      set({ error: `Too many attempts. Try again in ${Math.floor(rem / 60)}m ${rem % 60}s.` });
+  signIn: async (email: string, password: string) => {
+    set({ busy: true, error: null });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      set({ busy: false, error: error.message });
       return false;
     }
-    const verifier = localStorage.getItem(PIN_VERIFIER_KEY);
-    if (!verifier) {
-      set({ status: 'setup' });
+    const signedInEmail = data.user?.email ?? email;
+    if (signedInEmail.toLowerCase() !== OWNER_EMAIL) {
+      await supabase.auth.signOut();
+      set({ busy: false, error: 'This app is restricted to a single account.' });
       return false;
     }
-    const ok = await verifyPin(pin, verifier);
-    if (!ok) {
-      const attempts = getAttempts() + 1;
-      setAttempts(attempts);
-      if (attempts >= MAX_ATTEMPTS) {
-        setLockout(Date.now() + LOCKOUT_MS);
-        set({ error: `Too many attempts. Locked for 5 minutes.`, attempts, lockedUntil: Date.now() + LOCKOUT_MS });
-      } else {
-        const remaining = MAX_ATTEMPTS - attempts;
-        set({ error: `Incorrect PIN. ${remaining} ${remaining === 1 ? 'attempt' : 'attempts'} remaining.`, attempts });
-      }
-      return false;
-    }
-    const key = await deriveVaultKey(pin);
-    // Cache the vault key as JWK for biometric (not the PIN itself)
-    const jwk = await exportVaultKey(key);
-    sessionStorage.setItem(VAULT_KEY_SESSION_KEY, jwk);
-    setAttempts(0);
-    setLockout(null);
-    set({ status: 'unlocked', vaultKey: key, error: null, attempts: 0, lockedUntil: null });
+    const vaultKey = await deriveVaultKey(password);
+    set({ status: 'unlocked', email: signedInEmail, vaultKey, busy: false, error: null });
     return true;
   },
 
-  unlockWithBiometric: async () => {
-    try {
-      const cred = await (navigator as unknown as { credentials: { get: (opts: unknown) => Promise<unknown> } }).credentials.get({
-        publicKey: {
-          challenge: crypto.getRandomValues(new Uint8Array(32)),
-          timeout: 60000,
-          userVerification: 'required',
-        },
-        mediation: 'optional',
-      });
-      if (!cred) return false;
-      // Biometric succeeded — restore the cached vault key JWK (not the PIN).
-      const jwk = sessionStorage.getItem(VAULT_KEY_SESSION_KEY);
-      if (!jwk) return false;
-      const key = await importVaultKey(jwk);
-      set({ status: 'unlocked', vaultKey: key, error: null });
-      return true;
-    } catch {
+  signOut: async () => {
+    await supabase.auth.signOut();
+    set({ status: 'signed-out', email: null, vaultKey: null, error: null });
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const email = get().email;
+    const oldVaultKey = get().vaultKey;
+    if (!email) return false;
+    const { error: verifyError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+    if (verifyError) {
+      set({ error: 'Current password is incorrect.' });
       return false;
     }
-  },
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      set({ error: error.message });
+      return false;
+    }
+    const newVaultKey = await deriveVaultKey(newPassword);
 
-  lock: () => {
-    // Clear the cached key from memory and sessionStorage.
-    sessionStorage.removeItem(VAULT_KEY_SESSION_KEY);
-    set({ status: 'locked', vaultKey: null, error: null });
-  },
+    // The vault key is derived from the password: existing vault items are
+    // ciphertext under the old key and must be re-encrypted now, before the
+    // old key is gone, or they become permanently unreadable.
+    let result: VaultReencryptResult = { total: 0, failed: [] };
+    if (oldVaultKey) {
+      try {
+        result = await reencryptVaultOnKeyChange(oldVaultKey, newVaultKey);
+      } catch (err) {
+        logger.error('Vault re-encryption failed after password change', err);
+      }
+    }
 
-  setBiometricPreferred: (v: boolean) => {
-    localStorage.setItem(BIOMETRIC_PREF_KEY, String(v));
-    set({ biometricPreferred: v });
+    set({ vaultKey: newVaultKey, error: null });
+    return result;
   },
 
   setNotifications: (prefs: Partial<NotificationPrefs>) => {
@@ -207,6 +133,3 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 }));
-
-// The vault key JWK is cached inside setupPin/unlock for biometric use.
-// The raw PIN is never stored anywhere.

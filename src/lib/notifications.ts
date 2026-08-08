@@ -31,10 +31,6 @@ const MOTIVATIONS = [
   'You are never too old to set another goal or to dream a new dream.',
 ];
 
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 function pickByDate<T>(arr: T[]): T {
   const day = Math.floor(Date.now() / 86400000);
   return arr[day % arr.length];
@@ -68,7 +64,7 @@ export async function showNotification(title: string, body: string, tag = 'lifeo
   }
 }
 
-export async function sendDailyBrief(prefs: NotificationPrefs) {
+export async function sendDailyBrief(_prefs: NotificationPrefs) {
   const { data: tasks } = await supabase
     .from('tasks')
     .select('*')

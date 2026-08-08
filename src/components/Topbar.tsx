@@ -27,7 +27,7 @@ export function Topbar({ title, subtitle, onOpenSearch, onOpenCommand, onToggleM
           <Menu size={18} />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="font-display font-bold text-lg leading-tight truncate">{title}</h1>
+          <h1 className="view-title !text-lg leading-tight truncate">{title}</h1>
           {subtitle && <p className="text-xs text-slate-400 leading-tight truncate">{subtitle}</p>}
         </div>
 

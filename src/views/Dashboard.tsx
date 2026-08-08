@@ -5,6 +5,7 @@ import {
   Clock, Quote, ChevronRight, Sun, Cloud, CloudRain, Wind,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { hueRGB } from '@/lib/colors';
 import type { LucideIcon } from 'lucide-react';
 import type { CalendarEvent, Goal, Habit, HabitLog, JournalEntry, Project, Task } from '@/lib/types';
 import type { ViewKey } from '@/components/Sidebar';
@@ -132,10 +133,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Today's schedule */}
-        <div className={`${cardCls} lg:col-span-2`}>
+        <div className={`${cardCls} lg:col-span-2`} style={{ borderTop: `3px solid ${hueRGB('sky')}` }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Calendar size={18} className="text-accent-500" />
+              <Calendar size={18} style={{ color: hueRGB('sky') }} />
               <h3 className="font-display font-semibold">Today's Schedule</h3>
             </div>
             <button onClick={() => onNavigate('calendar')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
@@ -185,10 +186,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
         </div>
 
         {/* Priority tasks */}
-        <div className={cardCls}>
+        <div className={cardCls} style={{ borderTop: `3px solid ${hueRGB('emerald')}` }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <CheckSquare size={18} className="text-accent-500" />
+              <CheckSquare size={18} style={{ color: hueRGB('emerald') }} />
               <h3 className="font-display font-semibold">Priority Tasks</h3>
             </div>
             <button onClick={() => onNavigate('tasks')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
@@ -208,10 +209,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
         </div>
 
         {/* Habit progress */}
-        <div className={cardCls}>
+        <div className={cardCls} style={{ borderTop: `3px solid ${hueRGB('orange')}` }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Flame size={18} className="text-accent-500" />
+              <Flame size={18} style={{ color: hueRGB('orange') }} />
               <h3 className="font-display font-semibold">Habit Progress</h3>
             </div>
             <button onClick={() => onNavigate('habits')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
@@ -229,7 +230,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
                     <span className="text-xs text-slate-400">{streak}d streak · {weekCount}/{h.target_per_week}</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div className="h-full rounded-full bg-accent-500 transition-all" style={{ width: `${Math.min(100, (weekCount / h.target_per_week) * 100)}%` }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (weekCount / h.target_per_week) * 100)}%`, background: hueRGB('orange') }} />
                   </div>
                 </div>
               );
@@ -239,10 +240,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
         </div>
 
         {/* Goals progress */}
-        <div className={cardCls}>
+        <div className={cardCls} style={{ borderTop: `3px solid ${hueRGB('amber')}` }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Target size={18} className="text-accent-500" />
+              <Target size={18} style={{ color: hueRGB('amber') }} />
               <h3 className="font-display font-semibold">Goals</h3>
             </div>
             <button onClick={() => onNavigate('goals')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
@@ -257,7 +258,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
                   <span className="text-xs text-slate-400">{g.progress}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full rounded-full bg-accent-500 transition-all" style={{ width: `${g.progress}%` }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${g.progress}%`, background: hueRGB('amber') }} />
                 </div>
               </div>
             ))}
@@ -266,10 +267,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
         </div>
 
         {/* Journal streak + recent memories */}
-        <div className={`${cardCls} lg:col-span-2`}>
+        <div className={`${cardCls} lg:col-span-2`} style={{ borderTop: `3px solid ${hueRGB('rose')}` }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <BookOpen size={18} className="text-accent-500" />
+              <BookOpen size={18} style={{ color: hueRGB('rose') }} />
               <h3 className="font-display font-semibold">Journal & Memories</h3>
             </div>
             <button onClick={() => onNavigate('journal')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
@@ -277,10 +278,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
             </button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            <Stat label="Journal streak" value={`${journalStreak}d`} icon={Flame} />
-            <Stat label="Entries (30d)" value={`${journals.length}`} icon={BookOpen} />
-            <Stat label="Tasks done today" value={`${completedToday.length}`} icon={CheckSquare} />
-            <Stat label="Active projects" value={`${activeProjects.length}`} icon={TrendingUp} />
+            <Stat label="Journal streak" value={`${journalStreak}d`} icon={Flame} hue="orange" />
+            <Stat label="Entries (30d)" value={`${journals.length}`} icon={BookOpen} hue="rose" />
+            <Stat label="Tasks done today" value={`${completedToday.length}`} icon={CheckSquare} hue="emerald" />
+            <Stat label="Active projects" value={`${activeProjects.length}`} icon={TrendingUp} hue="cyan" />
           </div>
           <div className="text-xs text-slate-400 mb-1.5">Recent journal</div>
           <div className="space-y-1.5">
@@ -296,9 +297,9 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
         </div>
 
         {/* Focus timer */}
-        <div className={cardCls}>
+        <div className={cardCls} style={{ borderTop: `3px solid ${hueRGB('violet')}` }}>
           <div className="flex items-center gap-2 mb-4">
-            <Clock size={18} className="text-accent-500" />
+            <Clock size={18} style={{ color: hueRGB('violet') }} />
             <h3 className="font-display font-semibold">Focus Timer</h3>
           </div>
           <FocusTimer />
@@ -308,10 +309,10 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
   );
 }
 
-function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
+function Stat({ label, value, icon: Icon, hue }: { label: string; value: string; icon: LucideIcon; hue: Parameters<typeof hueRGB>[0] }) {
   return (
-    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3">
-      <div className="flex items-center gap-1.5 text-slate-400 text-[11px] mb-1">
+    <div className="rounded-xl p-3" style={{ background: hueRGB(hue, 0.08) }}>
+      <div className="flex items-center gap-1.5 text-[11px] mb-1" style={{ color: hueRGB(hue) }}>
         <Icon size={12} /> {label}
       </div>
       <div className="font-display font-bold text-xl">{value}</div>
@@ -335,7 +336,7 @@ function FocusTimer() {
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-100 dark:text-slate-800" />
           <circle
-            cx="50" cy="50" r="44" fill="none" stroke="rgb(var(--accent-500))" strokeWidth="4" strokeLinecap="round"
+            cx="50" cy="50" r="44" fill="none" stroke={hueRGB('violet')} strokeWidth="4" strokeLinecap="round"
             strokeDasharray={2 * Math.PI * 44}
             strokeDashoffset={2 * Math.PI * 44 * (1 - seconds / (25 * 60))}
           />

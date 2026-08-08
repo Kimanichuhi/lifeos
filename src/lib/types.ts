@@ -124,3 +124,14 @@ export interface AiMessage {
   content: string;
   created_at: string;
 }
+
+export interface Snippet {
+  id: string;
+  title: string;
+  language: string;
+  code: string;
+  description: string | null;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}

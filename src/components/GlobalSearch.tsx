@@ -49,7 +49,6 @@ export function GlobalSearch({ open, onClose, onNavigate }: Props) {
     if (!query.trim() || query.trim().length < 2) { setResults([]); return; }
     setLoading(true);
     (async () => {
-      const q = query.toLowerCase();
       const [tasks, notes, journals, events, goals, projects] = await Promise.all([
         supabase.from('tasks').select('*').ilike('title', `%${query}%`),
         supabase.from('notes').select('*').or(`title.ilike.%${query}%,content.ilike.%${query}%`),

@@ -2,36 +2,40 @@ import { motion } from 'framer-motion';
 import {
   Home, Bot, BookOpen, Calendar, CheckSquare, Target, Flame,
   FolderKanban, StickyNote, FileText, Wallet, BarChart3, Settings,
-  Search, Sparkles, Moon, Sun, Monitor, Shield,
+  Search, Sparkles, Moon, Sun, Monitor, Shield, Code2,
 } from 'lucide-react';
 import { useSettings, type AccentName, type ThemeMode } from '@/lib/theme';
+import { hueRGB, type HueName } from '@/lib/colors';
 import type { LucideIcon } from 'lucide-react';
 
 export type ViewKey =
   | 'home' | 'assistant' | 'journal' | 'calendar' | 'tasks' | 'goals'
-  | 'habits' | 'projects' | 'notes' | 'documents' | 'finance' | 'analytics' | 'vault' | 'settings';
+  | 'habits' | 'projects' | 'notes' | 'documents' | 'finance' | 'analytics'
+  | 'dev' | 'vault' | 'settings';
 
 interface NavItem {
   key: ViewKey;
   label: string;
   icon: LucideIcon;
+  hue: HueName;
 }
 
 const NAV: NavItem[] = [
-  { key: 'home', label: 'Home', icon: Home },
-  { key: 'assistant', label: 'AI Assistant', icon: Bot },
-  { key: 'journal', label: 'Journal', icon: BookOpen },
-  { key: 'calendar', label: 'Calendar', icon: Calendar },
-  { key: 'tasks', label: 'Tasks', icon: CheckSquare },
-  { key: 'goals', label: 'Goals', icon: Target },
-  { key: 'habits', label: 'Habits', icon: Flame },
-  { key: 'projects', label: 'Projects', icon: FolderKanban },
-  { key: 'notes', label: 'Notes', icon: StickyNote },
-  { key: 'documents', label: 'Documents', icon: FileText },
-  { key: 'vault', label: 'Vault', icon: Shield },
-  { key: 'finance', label: 'Finance', icon: Wallet },
-  { key: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { key: 'settings', label: 'Settings', icon: Settings },
+  { key: 'home', label: 'Home', icon: Home, hue: 'accent' },
+  { key: 'assistant', label: 'AI Assistant', icon: Bot, hue: 'violet' },
+  { key: 'journal', label: 'Journal', icon: BookOpen, hue: 'rose' },
+  { key: 'calendar', label: 'Calendar', icon: Calendar, hue: 'sky' },
+  { key: 'tasks', label: 'Tasks', icon: CheckSquare, hue: 'emerald' },
+  { key: 'goals', label: 'Goals', icon: Target, hue: 'amber' },
+  { key: 'habits', label: 'Habits', icon: Flame, hue: 'orange' },
+  { key: 'projects', label: 'Projects', icon: FolderKanban, hue: 'cyan' },
+  { key: 'notes', label: 'Notes', icon: StickyNote, hue: 'yellow' },
+  { key: 'documents', label: 'Documents', icon: FileText, hue: 'teal' },
+  { key: 'vault', label: 'Vault', icon: Shield, hue: 'slate' },
+  { key: 'finance', label: 'Finance', icon: Wallet, hue: 'green' },
+  { key: 'analytics', label: 'Analytics', icon: BarChart3, hue: 'pink' },
+  { key: 'dev', label: 'Dev', icon: Code2, hue: 'violet' },
+  { key: 'settings', label: 'Settings', icon: Settings, hue: 'slate' },
 ];
 
 const ACCENTS: { name: AccentName; color: string }[] = [
@@ -119,15 +123,20 @@ export function Sidebar({
               <button
                 key={item.key}
                 onClick={() => { onNavigate(item.key); onCloseMobile(); }}
-                className={`nav-item w-full ${active ? 'nav-item-active' : ''}`}
+                className="nav-item w-full"
+                style={active ? {
+                  backgroundColor: hueRGB(item.hue, 0.12),
+                  color: hueRGB(item.hue),
+                } : undefined}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon size={18} className="shrink-0" />
+                <Icon size={18} className="shrink-0" style={{ color: hueRGB(item.hue, active ? 1 : 0.7) }} />
                 {!collapsed && <span>{item.label}</span>}
                 {active && !collapsed && (
                   <motion.div
                     layoutId="nav-dot"
-                    className="ml-auto size-1.5 rounded-full bg-accent-500"
+                    className="ml-auto size-1.5 rounded-full"
+                    style={{ background: hueRGB(item.hue) }}
                   />
                 )}
               </button>

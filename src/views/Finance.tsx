@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, CreditCard, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Wallet, TrendingUp, PiggyBank, CreditCard, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export function Finance() {
@@ -7,7 +7,7 @@ export function Finance() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display font-bold text-2xl">Finance</h2>
+          <h2 className="view-title">Finance</h2>
           <p className="text-sm text-slate-400">Track income, expenses, and financial goals.</p>
         </div>
         <button className="btn-primary"><Plus size={16} /> Transaction</button>

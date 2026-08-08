@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Flame, Check, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, Flame, TrendingUp } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { createHabit, deleteHabit, toggleHabitLog, updateHabit } from '@/lib/api';
+import { createHabit, deleteHabit, toggleHabitLog } from '@/lib/api';
 import { useHabits, useHabitLogs } from '@/lib/hooks';
 import { useToast } from '@/lib/toast';
 import { Modal } from '@/components/Modal';
-import type { Habit, HabitLog } from '@/lib/types';
 
 const HABIT_COLORS = ['emerald', 'blue', 'amber', 'violet', 'cyan', 'rose', 'sky', 'orange'];
 const HABIT_ICONS = ['Check', 'Dumbbell', 'BookOpen', 'Code2', 'Sparkles', 'Brain', 'Droplets', 'Heart', 'Coffee', 'Sun', 'Moon', 'Music'];
@@ -76,7 +75,7 @@ export function Habits() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display font-bold text-2xl">Habits</h2>
+          <h2 className="view-title">Habits</h2>
           <p className="text-sm text-slate-400">Build streaks. Small steps, every day.</p>
         </div>
         <button onClick={() => setShowNew(true)} className="btn-primary">

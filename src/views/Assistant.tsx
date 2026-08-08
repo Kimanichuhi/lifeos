@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Bot, Send, Plus, Trash2, Sparkles, Brain, Lightbulb, Calendar,
+  Bot, Send, Plus, Trash2, Sparkles, Brain, Calendar,
   CheckSquare, Target, BookOpen, MessageSquare, User,
 } from 'lucide-react';
 import {
@@ -169,7 +169,7 @@ export function Assistant({ presetQuery }: { presetQuery?: string | null }) {
                 <div className="size-16 rounded-2xl bg-accent-500/10 text-accent-500 grid place-items-center mx-auto mb-5">
                   <Bot size={32} />
                 </div>
-                <h2 className="font-display font-bold text-2xl mb-2">Your Life OS Assistant</h2>
+                <h2 className="view-title mb-2">Your Life OS Assistant</h2>
                 <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8">
                   I can see your tasks, habits, calendar, goals, projects, notes, and journal.
                   Ask me to plan your day, summarize your week, or search your history.

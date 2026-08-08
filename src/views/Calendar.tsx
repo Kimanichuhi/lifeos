@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, MapPin, Trash2 } from 'lucide-react';
 import { createEvent, deleteEvent } from '@/lib/api';
 import { useEvents } from '@/lib/hooks';
 import { useToast } from '@/lib/toast';
@@ -34,11 +33,10 @@ function fmtTime(iso: string) {
 }
 
 export function Calendar() {
-  const { data: events, loading } = useEvents();
+  const { data: events } = useEvents();
   const [mode, setMode] = useState<ViewMode>('week');
   const [cursor, setCursor] = useState(new Date());
   const [showNew, setShowNew] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const byDay = useMemo(() => {
     const m = new Map<string, CalendarEvent[]>();
@@ -70,7 +68,6 @@ export function Calendar() {
   }, [cursor]);
 
   const today = new Date().toISOString().slice(0, 10);
-  const dayEvents = (byDay.get(selectedDay ?? today) ?? []);
 
   function shift(amount: number) {
     const d = new Date(cursor);

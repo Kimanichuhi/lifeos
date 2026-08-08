@@ -153,7 +153,7 @@ function searchAll(ctx: ContextData, query: string): Match[] {
   return results.sort((a, b) => b.score - a.score).slice(0, 8);
 }
 
-export async function generateReply(userText: string, history: AiMessage[]): Promise<string> {
+export async function generateReply(userText: string, _history: AiMessage[]): Promise<string> {
   const ctx = await loadContext();
   const q = userText.toLowerCase().trim();
 

@@ -1,11 +1,47 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, CheckCircle2, Flame, BookOpen, Target, Clock, Sparkles } from 'lucide-react';
+import {
+  TrendingUp, CheckCircle2, Flame, BookOpen, Target, Clock, Sparkles,
+  Table2, Download, DatabaseBackup, ArrowUpDown,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { EXPLORABLE_TABLES, exportAsCsv, exportAsJson, exportEverything, type ExplorableTable } from '@/lib/exportData';
+import { useToast } from '@/lib/toast';
 import type { Goal, Habit, HabitLog, JournalEntry, Task } from '@/lib/types';
 
+type Tab = 'overview' | 'explorer';
+
 export function Analytics() {
+  const [tab, setTab] = useState<Tab>('overview');
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h2 className="view-title">Analytics</h2>
+          <p className="text-sm text-slate-400">Your patterns, progress, and momentum.</p>
+        </div>
+        <div className="flex bg-slate-100 dark:bg-slate-800/60 rounded-xl p-0.5">
+          {(['overview', 'explorer'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium capitalize transition
+                ${tab === t ? 'bg-white dark:bg-slate-900 shadow-sm text-accent-600 dark:text-accent-300' : 'text-slate-500'}`}
+            >
+              {t === 'overview' ? 'Overview' : 'Data Explorer'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === 'overview' ? <Overview /> : <DataExplorer />}
+    </div>
+  );
+}
+
+function Overview() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [logs, setLogs] = useState<HabitLog[]>([]);
@@ -67,12 +103,7 @@ export function Analytics() {
   const journalCount = journals.length;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h2 className="font-display font-bold text-2xl">Analytics</h2>
-        <p className="text-sm text-slate-400">Your patterns, progress, and momentum.</p>
-      </div>
-
+    <>
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Tasks completed" value={completedTasks} icon={CheckCircle2} color="text-emerald-500 bg-emerald-500/10" />
@@ -167,7 +198,7 @@ export function Analytics() {
           {loading ? 'Analyzing your patterns…' : generateInsight(tasks, habits, goals, journals, logs)}
         </p>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -205,4 +236,153 @@ function generateInsight(tasks: Task[], habits: Habit[], goals: Goal[], journals
     if (nearDone.length) insights.push(`You're close to finishing "${nearDone[0].title}" — ${nearDone[0].progress}% done.`);
   }
   return insights.length ? insights.join(' ') : 'Keep going — every logged entry helps me understand you better.';
+}
+
+// ---------- Data Explorer ----------
+
+const PAGE_SIZE = 25;
+
+function DataExplorer() {
+  const [table, setTable] = useState<ExplorableTable>('tasks');
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortAsc, setSortAsc] = useState(false);
+  const [page, setPage] = useState(0);
+  const [exportingAll, setExportingAll] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    setLoading(true);
+    setPage(0);
+    setSortCol(null);
+    supabase.from(table).select('*').then(({ data, error }) => {
+      if (error) { toast.error(`Could not load ${table}`); setRows([]); }
+      else setRows((data ?? []) as Record<string, unknown>[]);
+      setLoading(false);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table]);
+
+  const columns = useMemo(() => (rows[0] ? Object.keys(rows[0]) : []), [rows]);
+
+  const filtered = useMemo(() => {
+    let list = rows;
+    if (filter.trim()) {
+      const q = filter.toLowerCase();
+      list = list.filter((r) => Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(q)));
+    }
+    if (sortCol) {
+      list = [...list].sort((a, b) => {
+        const av = String(a[sortCol] ?? '');
+        const bv = String(b[sortCol] ?? '');
+        return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+    }
+    return list;
+  }, [rows, filter, sortCol, sortAsc]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  function toggleSort(col: string) {
+    if (sortCol === col) setSortAsc((a) => !a);
+    else { setSortCol(col); setSortAsc(true); }
+  }
+
+  async function handleExportEverything() {
+    setExportingAll(true);
+    try {
+      await exportEverything();
+      toast.success('Backup downloaded');
+    } catch {
+      toast.error('Backup failed');
+    } finally {
+      setExportingAll(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="card p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <select value={table} onChange={(e) => setTable(e.target.value as ExplorableTable)} className="input !w-auto">
+            {EXPLORABLE_TABLES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <input
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter rows…"
+            className="input flex-1 min-w-[160px]"
+          />
+          <button onClick={() => exportAsCsv(table, filtered)} className="btn-outline !py-1.5 !text-xs" disabled={filtered.length === 0}>
+            <Download size={13} /> CSV
+          </button>
+          <button onClick={() => exportAsJson(table, filtered)} className="btn-outline !py-1.5 !text-xs" disabled={filtered.length === 0}>
+            <Download size={13} /> JSON
+          </button>
+          <button onClick={handleExportEverything} className="btn-outline !py-1.5 !text-xs" disabled={exportingAll}>
+            <DatabaseBackup size={13} /> {exportingAll ? 'Exporting…' : 'Export everything'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card overflow-hidden">
+        {loading && <div className="p-8 text-center text-sm text-slate-400">Loading…</div>}
+        {!loading && rows.length === 0 && (
+          <div className="p-10 text-center text-sm text-slate-400 flex flex-col items-center gap-2">
+            <Table2 size={28} className="text-slate-300 dark:text-slate-700" />
+            No rows in {table}.
+          </div>
+        )}
+        {!loading && rows.length > 0 && (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200/70 dark:border-slate-800/70">
+                    {columns.map((c) => (
+                      <th key={c} className="text-left px-3 py-2 font-semibold text-slate-500 whitespace-nowrap">
+                        <button onClick={() => toggleSort(c)} className="flex items-center gap-1 hover:text-accent-500">
+                          {c} <ArrowUpDown size={10} className={sortCol === c ? 'text-accent-500' : 'text-slate-300'} />
+                        </button>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageRows.map((r, i) => (
+                    <tr key={i} className="border-b border-slate-100 dark:border-slate-800/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                      {columns.map((c) => (
+                        <td key={c} className="px-3 py-2 font-mono text-slate-600 dark:text-slate-300 max-w-[240px] truncate">
+                          {formatCell(r[c])}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-200/70 dark:border-slate-800/70 text-xs text-slate-400">
+              <span>{filtered.length} row{filtered.length === 1 ? '' : 's'}</span>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} className="btn-ghost !py-1 !px-2 !text-xs">Prev</button>
+                  <span>{page + 1} / {totalPages}</span>
+                  <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} className="btn-ghost !py-1 !px-2 !text-xs">Next</button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatCell(v: unknown): string {
+  if (v === null || v === undefined) return '—';
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
 }

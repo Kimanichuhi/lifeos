@@ -55,7 +55,7 @@ export function Projects() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display font-bold text-2xl">Projects</h2>
+          <h2 className="view-title">Projects</h2>
           <p className="text-sm text-slate-400">Each project is a hub for tasks, notes, and progress.</p>
         </div>
         <button onClick={() => setShowNew(true)} className="btn-primary">

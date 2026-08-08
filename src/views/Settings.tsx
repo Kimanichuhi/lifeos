@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Plus, Trash2, Pencil, Sparkles, Sun, Moon, Monitor, Check, X, Shield, Bell, Fingerprint, Lock, KeyRound } from 'lucide-react';
+import { Brain, Plus, Trash2, Pencil, Sparkles, Sun, Moon, Monitor, Check, Shield, Bell, KeyRound, Mail, LogOut, Code2, Save } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { createMemory, deleteMemory, getMemories, updateMemory } from '@/lib/api';
 import { useSettings, type AccentName, type ThemeMode } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast';
-import { requestNotificationPermission, notificationsSupported, sendDailyBrief, sendEveningReflection, sendMotivation, sendBibleVerse, sendTaskReminder, sendPrayerReminder } from '@/lib/notifications';
+import { requestNotificationPermission, sendDailyBrief, sendEveningReflection, sendMotivation, sendBibleVerse, sendTaskReminder, sendPrayerReminder } from '@/lib/notifications';
+import { getGitHubUsername, setGitHubUsername } from '@/lib/github';
+import { getUptimeTargets, setUptimeTargets, type UptimeTarget } from '@/lib/uptime';
 import { Modal } from '@/components/Modal';
 import type { AiMemory } from '@/lib/types';
 
@@ -35,14 +37,11 @@ export function Settings() {
   const [editing, setEditing] = useState<AiMemory | null>(null);
   const toast = useToast();
 
-  const authStatus = useAuth((s) => s.status);
-  const lock = useAuth((s) => s.lock);
-  const biometricAvailable = useAuth((s) => s.biometricAvailable);
-  const biometricPreferred = useAuth((s) => s.biometricPreferred);
-  const setBiometricPreferred = useAuth((s) => s.setBiometricPreferred);
+  const email = useAuth((s) => s.email);
+  const signOut = useAuth((s) => s.signOut);
   const notifications = useAuth((s) => s.notifications);
   const setNotifications = useAuth((s) => s.setNotifications);
-  const [showPinChange, setShowPinChange] = useState(false);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
 
   useEffect(() => {
     loadMemories();
@@ -62,7 +61,7 @@ export function Settings() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       <div>
-        <h2 className="font-display font-bold text-2xl">Settings</h2>
+        <h2 className="view-title">Settings</h2>
         <p className="text-sm text-slate-400">Personalize your Life OS.</p>
       </div>
 
@@ -145,40 +144,25 @@ export function Settings() {
       </Section>
 
       {/* Security */}
-      <Section title="Security & Privacy" icon={Shield}>
+      <Section title="Account & Security" icon={Shield}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="size-9 rounded-xl bg-accent-500/10 text-accent-500 grid place-items-center">
-                <Lock size={17} />
+                <Mail size={17} />
               </div>
               <div>
-                <div className="text-sm font-medium">PIN lock</div>
-                <div className="text-xs text-slate-400">App is protected with a 6-digit PIN</div>
+                <div className="text-sm font-medium">Signed in as</div>
+                <div className="text-xs text-slate-400">{email}</div>
               </div>
             </div>
-            <button onClick={() => setShowPinChange(true)} className="btn-outline !py-1.5 !text-xs">
-              <KeyRound size={13} /> Change PIN
+            <button onClick={() => setShowPasswordChange(true)} className="btn-outline !py-1.5 !text-xs">
+              <KeyRound size={13} /> Change password
             </button>
           </div>
 
-          {biometricAvailable && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center">
-                  <Fingerprint size={17} />
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Biometric unlock</div>
-                  <div className="text-xs text-slate-400">Use fingerprint or face to unlock</div>
-                </div>
-              </div>
-              <Toggle on={biometricPreferred} onClick={() => setBiometricPreferred(!biometricPreferred)} />
-            </div>
-          )}
-
-          <button onClick={lock} className="btn-outline w-full">
-            <Lock size={15} /> Lock now
+          <button onClick={signOut} className="btn-outline w-full">
+            <LogOut size={15} /> Sign out
           </button>
         </div>
       </Section>
@@ -240,6 +224,8 @@ export function Settings() {
         </div>
       </Section>
 
+      <DeveloperSection />
+
       <Section title="About" icon={Sparkles}>
         <div className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
           <p>Life OS — your private personal operating system.</p>
@@ -273,8 +259,71 @@ export function Settings() {
           }}
         />
       )}
-      <PinChangeModal open={showPinChange} onClose={() => setShowPinChange(false)} />
+      <PasswordChangeModal open={showPasswordChange} onClose={() => setShowPasswordChange(false)} />
     </div>
+  );
+}
+
+function DeveloperSection() {
+  const [username, setUsername] = useState(getGitHubUsername());
+  const [targets, setTargets] = useState<UptimeTarget[]>(getUptimeTargets());
+  const toast = useToast();
+
+  function saveUsername() {
+    setGitHubUsername(username);
+    toast.success('GitHub username saved');
+  }
+
+  function updateTarget(i: number, patch: Partial<UptimeTarget>) {
+    setTargets((prev) => prev.map((t, idx) => (idx === i ? { ...t, ...patch } : t)));
+  }
+
+  function addTarget() {
+    setTargets((prev) => [...prev, { name: '', url: '' }]);
+  }
+
+  function removeTarget(i: number) {
+    setTargets((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function saveTargets() {
+    const cleaned = targets.filter((t) => t.name.trim() && t.url.trim());
+    setUptimeTargets(cleaned);
+    setTargets(cleaned);
+    toast.success('Reachability targets saved');
+  }
+
+  return (
+    <Section title="Developer" icon={Code2}>
+      <div className="space-y-5">
+        <div>
+          <div className="label mb-1.5">GitHub username</div>
+          <p className="text-xs text-slate-400 mb-2">Powers the activity feed on the Dev view. Public data only, no token needed.</p>
+          <div className="flex gap-2">
+            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. octocat" className="input" />
+            <button onClick={saveUsername} className="btn-outline shrink-0"><Save size={14} /> Save</button>
+          </div>
+        </div>
+
+        <div>
+          <div className="label mb-1.5">Reachability targets</div>
+          <p className="text-xs text-slate-400 mb-2">URLs pinged from the Dev view to show basic up/down + latency.</p>
+          <div className="space-y-2">
+            {targets.map((t, i) => (
+              <div key={i} className="flex gap-2">
+                <input value={t.name} onChange={(e) => updateTarget(i, { name: e.target.value })} placeholder="Name" className="input w-32" />
+                <input value={t.url} onChange={(e) => updateTarget(i, { url: e.target.value })} placeholder="https://…" className="input flex-1" />
+                <button onClick={() => removeTarget(i)} className="btn-ghost !p-2.5 !rounded-lg text-rose-500 shrink-0"><Trash2 size={14} /></button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-2">
+            <button onClick={addTarget} className="btn-ghost !py-1.5 !text-xs"><Plus size={13} /> Add target</button>
+            <button onClick={saveTargets} className="btn-outline !py-1.5 !text-xs"><Save size={13} /> Save targets</button>
+          </div>
+        </div>
+      </div>
+    </Section>
   );
 }
 
@@ -367,53 +416,57 @@ function NotifToggle({ label, desc, checked, onChange }: { label: string; desc: 
   );
 }
 
-function PinChangeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [oldPin, setOldPin] = useState('');
-  const [newPin, setNewPin] = useState('');
+function PasswordChangeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
-  const unlock = useAuth((s) => s.unlock);
-  const setupPin = useAuth((s) => s.setupPin);
+  const changePassword = useAuth((s) => s.changePassword);
 
   useEffect(() => {
-    if (open) { setOldPin(''); setNewPin(''); setConfirm(''); setError(null); }
+    if (open) { setCurrentPassword(''); setNewPassword(''); setConfirm(''); setError(null); }
   }, [open]);
 
   async function submit() {
     setError(null);
-    if (!/^\d{6}$/.test(oldPin)) { setError('Enter your current 6-digit PIN'); return; }
-    if (!/^\d{6}$/.test(newPin)) { setError('New PIN must be 6 digits'); return; }
-    if (newPin !== confirm) { setError('New PINs do not match'); return; }
+    if (!currentPassword) { setError('Enter your current password'); return; }
+    if (newPassword.length < 6) { setError('New password must be at least 6 characters'); return; }
+    if (newPassword !== confirm) { setError('New passwords do not match'); return; }
     setBusy(true);
-    const ok = await unlock(oldPin);
-    if (!ok) { setError('Current PIN is incorrect'); setBusy(false); return; }
-    await setupPin(newPin);
+    const result = await changePassword(currentPassword, newPassword);
     setBusy(false);
-    toast.success('PIN changed successfully');
+    if (!result) { setError('Current password is incorrect'); return; }
+    if (result.failed.length > 0) {
+      toast.error(`Password changed, but ${result.failed.length} of ${result.total} vault item(s) could not be re-encrypted. They may be unreadable now.`);
+    } else if (result.total > 0) {
+      toast.success(`Password changed. ${result.total} vault item(s) re-encrypted.`);
+    } else {
+      toast.success('Password changed successfully');
+    }
     onClose();
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Change PIN" size="sm">
+    <Modal open={open} onClose={onClose} title="Change password" size="sm">
       <div className="space-y-4">
         <div>
-          <div className="label mb-1.5">Current PIN</div>
-          <input type="password" inputMode="numeric" maxLength={6} value={oldPin} onChange={(e) => setOldPin(e.target.value.replace(/\D/g, ''))} className="input font-mono tracking-widest" placeholder="••••••" />
+          <div className="label mb-1.5">Current password</div>
+          <input type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="input" placeholder="••••••••" />
         </div>
         <div>
-          <div className="label mb-1.5">New PIN</div>
-          <input type="password" inputMode="numeric" maxLength={6} value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))} className="input font-mono tracking-widest" placeholder="••••••" />
+          <div className="label mb-1.5">New password</div>
+          <input type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input" placeholder="••••••••" />
         </div>
         <div>
-          <div className="label mb-1.5">Confirm new PIN</div>
-          <input type="password" inputMode="numeric" maxLength={6} value={confirm} onChange={(e) => setConfirm(e.target.value.replace(/\D/g, ''))} className="input font-mono tracking-widest" placeholder="••••••" />
+          <div className="label mb-1.5">Confirm new password</div>
+          <input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="input" placeholder="••••••••" />
         </div>
         {error && <p className="text-sm text-rose-500">{error}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={submit} disabled={busy}>Change PIN</button>
+          <button className="btn-primary" onClick={submit} disabled={busy}>Change password</button>
         </div>
       </div>
     </Modal>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FileText, Upload, Search, File, Image, FileCheck, Sparkles } from 'lucide-react';
+import { FileText, Upload, File, Image, FileCheck, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 const DOCS = [
@@ -22,7 +22,7 @@ export function Documents() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display font-bold text-2xl">Documents</h2>
+          <h2 className="view-title">Documents</h2>
           <p className="text-sm text-slate-400">Store contracts, receipts, certificates — ask the AI about any of them.</p>
         </div>
         <button className="btn-primary"><Upload size={16} /> Upload</button>

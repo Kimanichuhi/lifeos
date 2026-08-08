@@ -5,7 +5,7 @@ import { Topbar } from '@/components/Topbar';
 import { CommandPalette } from '@/components/CommandPalette';
 import { GlobalSearch } from '@/components/GlobalSearch';
 import { Toaster } from '@/components/Toaster';
-import { LockScreen } from '@/components/LockScreen';
+import { AuthScreen } from '@/components/AuthScreen';
 import { InstallBanner } from '@/components/InstallBanner';
 import { PermissionsPrompt } from '@/components/PermissionsPrompt';
 import { useToastStore } from '@/lib/toast';
@@ -24,6 +24,7 @@ import { Projects } from '@/views/Projects';
 import { Analytics } from '@/views/Analytics';
 import { Finance } from '@/views/Finance';
 import { Documents } from '@/views/Documents';
+import { Dev } from '@/views/Dev';
 import { Vault } from '@/views/Vault';
 import { Settings } from '@/views/Settings';
 
@@ -41,13 +42,14 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   vault: { title: 'Vault', subtitle: 'Encrypted. Private. Yours alone.' },
   finance: { title: 'Finance', subtitle: 'Income, expenses, and goals.' },
   analytics: { title: 'Analytics', subtitle: 'Your patterns and progress.' },
+  dev: { title: 'Dev', subtitle: 'Snippets, GitHub activity, and reachability.' },
   settings: { title: 'Settings', subtitle: 'Personalize your Life OS.' },
 };
 
 export default function App() {
   useThemeInit();
   const authStatus = useAuth((s) => s.status);
-  const lock = useAuth((s) => s.lock);
+  const signOut = useAuth((s) => s.signOut);
   const notifications = useAuth((s) => s.notifications);
   const [view, setView] = useState<ViewKey>('home');
   const [collapsed, setCollapsed] = useState(false);
@@ -85,7 +87,7 @@ export default function App() {
       if (meta && e.key.toLowerCase() === 'k') { e.preventDefault(); setCmdOpen((o) => !o); }
       else if (meta && e.key === '/') { e.preventDefault(); setSearchOpen(true); }
       else if (meta && e.key.toLowerCase() === 'b') { e.preventDefault(); setCollapsed((c) => !c); }
-      else if (meta && e.key.toLowerCase() === 'l') { e.preventDefault(); lock(); }
+      else if (meta && e.key.toLowerCase() === 'l') { e.preventDefault(); signOut(); }
       else if (!meta && !e.altKey && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         const map: Record<string, ViewKey> = {
           h: 'home', a: 'assistant', j: 'journal', c: 'calendar', t: 'tasks',
@@ -98,7 +100,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate, lock]);
+  }, [navigate, signOut]);
 
   // Notification scheduler — checks every 60s
   useEffect(() => {
@@ -108,20 +110,20 @@ export default function App() {
     return () => clearInterval(id);
   }, [authStatus, notifications]);
 
-  // Auto-lock when tab is hidden for more than 5 minutes
+  // Auto sign-out when tab is hidden for more than 5 minutes
   useEffect(() => {
     let hiddenAt: number | null = null;
     const onVis = () => {
       if (document.hidden) {
         hiddenAt = Date.now();
       } else if (hiddenAt && Date.now() - hiddenAt > 5 * 60 * 1000) {
-        lock();
+        signOut();
         hiddenAt = null;
       }
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [lock]);
+  }, [signOut]);
 
   const toasts = useToastStore((s) => s.toasts);
   const removeToast = useToastStore((s) => s.remove);
@@ -130,7 +132,7 @@ export default function App() {
   if (authStatus !== 'unlocked') {
     return (
       <>
-        <LockScreen />
+        <AuthScreen />
         <Toaster toasts={toasts} remove={removeToast} />
       </>
     );
@@ -180,6 +182,7 @@ export default function App() {
               {view === 'analytics' && <Analytics />}
               {view === 'finance' && <Finance />}
               {view === 'documents' && <Documents />}
+              {view === 'dev' && <Dev />}
               {view === 'vault' && <Vault />}
               {view === 'settings' && <Settings />}
             </motion.div>
