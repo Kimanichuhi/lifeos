@@ -48,14 +48,19 @@ export function GlobalSearch({ open, onClose, onNavigate }: Props) {
     let cancelled = false;
     if (!query.trim() || query.trim().length < 2) { setResults([]); return; }
     setLoading(true);
+    // PostgREST's .or() parses its argument as a mini filter DSL where `,`
+    // separates conditions and `()` group them — a raw search term could
+    // otherwise inject extra clauses. `,` and `()` aren't meaningful to a
+    // free-text search anyway, so they're stripped before interpolating.
+    const safe = query.replace(/[,()]/g, ' ');
     (async () => {
       const [tasks, notes, journals, events, goals, projects] = await Promise.all([
         supabase.from('tasks').select('*').ilike('title', `%${query}%`),
-        supabase.from('notes').select('*').or(`title.ilike.%${query}%,content.ilike.%${query}%`),
-        supabase.from('journal_entries').select('*').or(`gratitude.ilike.%${query}%,wins.ilike.%${query}%,challenges.ilike.%${query}%,lessons.ilike.%${query}%`),
+        supabase.from('notes').select('*').or(`title.ilike.%${safe}%,content.ilike.%${safe}%`),
+        supabase.from('journal_entries').select('*').or(`gratitude.ilike.%${safe}%,wins.ilike.%${safe}%,challenges.ilike.%${safe}%,lessons.ilike.%${safe}%`),
         supabase.from('events').select('*').ilike('title', `%${query}%`),
-        supabase.from('goals').select('*').or(`title.ilike.%${query}%,description.ilike.%${query}%`),
-        supabase.from('projects').select('*').or(`name.ilike.%${query}%,description.ilike.%${query}%`),
+        supabase.from('goals').select('*').or(`title.ilike.%${safe}%,description.ilike.%${safe}%`),
+        supabase.from('projects').select('*').or(`name.ilike.%${safe}%,description.ilike.%${safe}%`),
       ]);
       if (cancelled) return;
       const all: Result[] = [

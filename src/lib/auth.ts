@@ -1,6 +1,6 @@
 import { create } from './tinyStore';
 import { supabase } from './supabase';
-import { deriveVaultKey, reencryptVaultOnKeyChange, type VaultReencryptResult } from './crypto';
+import { deriveVaultKey, reencryptVaultOnKeyChange, resolveVaultSalt, type VaultReencryptResult } from './crypto';
 import { logger } from './logger';
 
 const NOTIF_PREF_KEY = 'lifeos-notif-prefs';
@@ -83,7 +83,8 @@ export const useAuth = create<AuthState>((set, get) => ({
       set({ busy: false, error: 'This app is restricted to a single account.' });
       return false;
     }
-    const vaultKey = await deriveVaultKey(password);
+    const salt = await resolveVaultSalt();
+    const vaultKey = await deriveVaultKey(password, salt);
     set({ status: 'unlocked', email: signedInEmail, vaultKey, busy: false, error: null });
     return true;
   },
@@ -107,7 +108,8 @@ export const useAuth = create<AuthState>((set, get) => ({
       set({ error: error.message });
       return false;
     }
-    const newVaultKey = await deriveVaultKey(newPassword);
+    const salt = await resolveVaultSalt();
+    const newVaultKey = await deriveVaultKey(newPassword, salt);
 
     // The vault key is derived from the password: existing vault items are
     // ciphertext under the old key and must be re-encrypted now, before the

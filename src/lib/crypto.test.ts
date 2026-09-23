@@ -36,6 +36,14 @@ describe('encryptString / decryptString', () => {
     const payload = await encryptString('sensitive', key1);
     await expect(decryptString(payload, key2)).rejects.toThrow();
   });
+
+  it('derives the same key from an explicit salt, independent of localStorage', async () => {
+    const salt = globalThis.crypto.getRandomValues(new Uint8Array(16));
+    const key1 = await deriveVaultKey('shared-salt-password', salt);
+    const key2 = await deriveVaultKey('shared-salt-password', salt);
+    const payload = await encryptString('portable across devices', key1);
+    await expect(decryptString(payload, key2)).resolves.toBe('portable across devices');
+  });
 });
 
 describe('encryptFile / decryptToFile', () => {

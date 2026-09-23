@@ -3,10 +3,11 @@
 // Security model:
 //   - The password is never stored; it is only held in memory for the
 //     duration of the session (see lib/auth.ts).
-//   - A per-installation random salt is stored in localStorage and used for
-//     vault key derivation. This means the same password on a different
-//     device produces a different key (defends against rainbow tables and
-//     cross-device correlation) — the vault is scoped to this installation.
+//   - The PBKDF2 salt is resolved via resolveVaultSalt(): the server-side
+//     vault_settings row is the source of truth (so the vault stays
+//     decryptable across devices and after clearing local storage), cached
+//     in localStorage for fast/offline access. See resolveVaultSalt for
+//     the full first-write-wins resolution flow.
 //   - PBKDF2 uses 600,000 iterations (OWASP 2023 recommends ≥600k for SHA-256).
 //   - Vault item titles are encrypted alongside content so the server sees
 //     only ciphertext + a non-sensitive category label.
@@ -68,9 +69,42 @@ export async function decryptString(payload: EncryptedPayload, key: CryptoKey): 
   return dec.decode(pt);
 }
 
-export async function deriveVaultKey(password: string): Promise<CryptoKey> {
-  const salt = getOrCreateSalt();
-  return deriveKey(password, salt, ['encrypt', 'decrypt']);
+export async function deriveVaultKey(password: string, salt?: Uint8Array): Promise<CryptoKey> {
+  return deriveKey(password, salt ?? getOrCreateSalt(), ['encrypt', 'decrypt']);
+}
+
+// Resolves the vault salt with the server (vault_settings) as the source of
+// truth, falling back to local-only behavior if the request fails (e.g.
+// offline) so a network hiccup never blocks sign-in over a data-loss
+// safeguard. First-write-wins: if no server row exists yet, whatever salt
+// is already cached locally (if any) is written there, so upgrading an
+// existing installation preserves already-encrypted vault items instead of
+// orphaning them. A race between two devices doing this for the first time
+// is resolved by refetching after a failed insert (the PK collision means
+// the other device won).
+export async function resolveVaultSalt(): Promise<Uint8Array> {
+  try {
+    const { supabase } = await import('./supabase');
+
+    const { data, error } = await supabase.from('vault_settings').select('salt').maybeSingle();
+    if (!error && data?.salt) {
+      localStorage.setItem(SALT_KEY, data.salt);
+      return b64ToBuf(data.salt);
+    }
+
+    const localSalt = getOrCreateSalt();
+    const { error: insertError } = await supabase.from('vault_settings').insert({ salt: bufToB64(localSalt) });
+    if (insertError) {
+      const { data: retry } = await supabase.from('vault_settings').select('salt').maybeSingle();
+      if (retry?.salt) {
+        localStorage.setItem(SALT_KEY, retry.salt);
+        return b64ToBuf(retry.salt);
+      }
+    }
+    return localSalt;
+  } catch {
+    return getOrCreateSalt();
+  }
 }
 
 export async function encryptFile(file: File, key: CryptoKey): Promise<EncryptedPayload> {
