@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        sans: ['"Josefin Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Josefin Sans"', 'ui-sans-serif', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
@@ -34,7 +34,10 @@ export default {
         '3xl': '24px',
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',
+        soft: '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -4px rgba(15,23,42,0.08), 0 24px 48px -20px rgba(15,23,42,0.12)',
+        'soft-dark': '0 0 0 1px rgba(255,255,255,0.05) inset, 0 8px 24px -4px rgba(0,0,0,0.5), 0 24px 48px -20px rgba(0,0,0,0.6)',
+        lift: '0 2px 4px rgba(15,23,42,0.05), 0 16px 32px -8px rgba(15,23,42,0.14), 0 32px 64px -24px rgba(15,23,42,0.16)',
+        'lift-dark': '0 0 0 1px rgba(255,255,255,0.08) inset, 0 16px 32px -8px rgba(0,0,0,0.6), 0 32px 64px -24px rgba(0,0,0,0.7)',
         glow: '0 0 0 1px rgb(var(--accent-500) / 0.15), 0 8px 32px rgb(var(--accent-500) / 0.18)',
       },
       keyframes: {

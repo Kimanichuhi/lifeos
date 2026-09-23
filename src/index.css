@@ -63,7 +63,15 @@
     @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60;
   }
   .card {
-    @apply bg-white dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800/70 rounded-2xl shadow-soft;
+    @apply bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-white/[0.06] rounded-2xl shadow-soft dark:shadow-soft-dark transition-[box-shadow,transform] duration-300 ease-out;
+  }
+  .card:hover {
+    @apply shadow-lift dark:shadow-lift-dark;
+  }
+  button.card:hover,
+  a.card:hover,
+  .card[role='button']:hover {
+    transform: translateY(-2px);
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 px-4 py-2 text-sm disabled:opacity-50 disabled:pointer-events-none;
