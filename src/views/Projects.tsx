@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, FolderKanban, Trash2, CheckCircle2, Clock, Pause } from 'lucide-react';
+import { Plus, FolderKanban, Trash2, CheckCircle2, Clock, Pause, Link2, Calendar } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { createProject, deleteProject, updateProject } from '@/lib/api';
 import { useProjects, useTasks } from '@/lib/hooks';
@@ -9,6 +9,20 @@ import { Modal } from '@/components/Modal';
 import type { Project, ProjectStatus } from '@/lib/types';
 
 const COLORS = ['blue', 'emerald', 'amber', 'violet', 'cyan', 'rose'];
+
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function linkLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
 
 const STATUS_META: Record<ProjectStatus, { label: string; icon: LucideIcon; color: string }> = {
   active: { label: 'Active', icon: Clock, color: 'text-emerald-500 bg-emerald-500/10' },
@@ -70,6 +84,7 @@ export function Projects() {
             const meta = STATUS_META[p.status];
             const StatusIcon = meta.icon;
             const counts = taskCounts.get(p.id);
+            const daysLeft = p.due_date ? Math.ceil((new Date(p.due_date + 'T00:00:00').getTime() - Date.now()) / 86400000) : null;
             return (
               <motion.div
                 key={p.id}
@@ -94,7 +109,7 @@ export function Projects() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex flex-wrap items-center gap-1.5 mb-3">
                   <button onClick={() => cycleStatus(p)} className={`chip ${meta.color} capitalize`}>
                     <StatusIcon size={11} /> {meta.label}
                   </button>
@@ -102,6 +117,22 @@ export function Projects() {
                     <span className="chip bg-slate-100 dark:bg-slate-800/60 text-slate-500">
                       {counts.done}/{counts.total} tasks
                     </span>
+                  )}
+                  {p.due_date && (
+                    <span className={`chip bg-slate-100 dark:bg-slate-800/60 ${daysLeft !== null && daysLeft <= 3 && p.status !== 'completed' ? 'text-amber-500' : 'text-slate-500'}`}>
+                      <Calendar size={11} /> {new Date(p.due_date + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
+                  {p.link && (
+                    <a
+                      href={p.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="chip bg-slate-100 dark:bg-slate-800/60 text-slate-500 hover:text-accent-500 transition"
+                    >
+                      <Link2 size={11} /> {linkLabel(p.link)}
+                    </a>
                   )}
                 </div>
 
@@ -142,6 +173,8 @@ function NewProjectModal({ open, onClose }: { open: boolean; onClose: () => void
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('blue');
+  const [link, setLink] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const toast = useToast();
 
   async function submit() {
@@ -152,10 +185,12 @@ function NewProjectModal({ open, onClose }: { open: boolean; onClose: () => void
       color,
       status: 'active',
       progress: 0,
+      link: link.trim() ? normalizeUrl(link) : null,
+      due_date: dueDate || null,
     });
     if (error) { toast.error('Could not create project'); return; }
     toast.success('Project created');
-    setName(''); setDescription('');
+    setName(''); setDescription(''); setLink(''); setDueDate('');
     onClose();
   }
 
@@ -169,6 +204,16 @@ function NewProjectModal({ open, onClose }: { open: boolean; onClose: () => void
         <div>
           <div className="label mb-1.5">Description</div>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="What is this project about?" className="input resize-y" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="label mb-1.5">Link</div>
+            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Repo, site, or doc URL" className="input" />
+          </div>
+          <div>
+            <div className="label mb-1.5">Due date</div>
+            <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="input" />
+          </div>
         </div>
         <div>
           <div className="label mb-1.5">Color</div>

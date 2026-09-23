@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import type {
-  AiConversation, AiMessage, AiMemory, CalendarEvent, Goal, Habit, HabitLog,
-  JournalEntry, Note, Project, Snippet, Task,
+  AiConversation, AiMessage, AiMemory, CalendarEvent, DocumentFile, Goal, Habit, HabitLog,
+  JournalEntry, Note, Project, Snippet, Task, Transaction,
 } from './types';
 
 // ---------- Tasks ----------
@@ -138,4 +138,23 @@ export async function deleteSnippet(id: string) {
   return supabase.from('snippets').delete().eq('id', id);
 }
 
-export type { AiConversation, AiMessage, AiMemory, CalendarEvent, Goal, Habit, HabitLog, JournalEntry, Note, Project, Snippet, Task };
+// ---------- Transactions ----------
+export async function createTransaction(input: Partial<Transaction>) {
+  return supabase.from('transactions').insert(input).select().single();
+}
+export async function updateTransaction(id: string, patch: Partial<Transaction>) {
+  return supabase.from('transactions').update(patch).eq('id', id);
+}
+export async function deleteTransaction(id: string) {
+  return supabase.from('transactions').delete().eq('id', id);
+}
+
+// ---------- Documents ----------
+export async function createDocument(input: Partial<DocumentFile>) {
+  return supabase.from('documents').insert(input).select().single();
+}
+export async function deleteDocument(id: string) {
+  return supabase.from('documents').delete().eq('id', id);
+}
+
+export type { AiConversation, AiMessage, AiMemory, CalendarEvent, DocumentFile, Goal, Habit, HabitLog, JournalEntry, Note, Project, Snippet, Task, Transaction };

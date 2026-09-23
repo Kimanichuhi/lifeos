@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import type {
-  CalendarEvent, Goal, Habit, HabitLog, JournalEntry, Note, Project, Task,
+  CalendarEvent, DocumentFile, Goal, Habit, HabitLog, JournalEntry, Note, Project, Task, Transaction,
 } from './types';
 
 export function useSupabaseQuery<T>(
@@ -57,4 +57,10 @@ export function useProjects() {
 }
 export function useJournalEntries() {
   return useSupabaseQuery<JournalEntry>('journal_entries');
+}
+export function useTransactions() {
+  return useSupabaseQuery<Transaction>('transactions');
+}
+export function useDocuments() {
+  return useSupabaseQuery<DocumentFile>('documents');
 }

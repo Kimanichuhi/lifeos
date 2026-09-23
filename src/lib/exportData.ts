@@ -6,7 +6,7 @@ import { supabase } from './supabase';
 // encouraged as a habit for sensitive data.
 export const EXPLORABLE_TABLES = [
   'tasks', 'habits', 'habit_logs', 'notes', 'events', 'goals', 'projects',
-  'journal_entries', 'snippets', 'ai_memories', 'ai_conversations', 'ai_messages',
+  'journal_entries', 'snippets', 'transactions', 'documents', 'ai_memories', 'ai_conversations', 'ai_messages',
 ] as const;
 
 export type ExplorableTable = (typeof EXPLORABLE_TABLES)[number];

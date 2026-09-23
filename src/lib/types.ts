@@ -4,6 +4,7 @@ export type EventCategory = 'work' | 'personal' | 'church' | 'business' | 'famil
 export type GoalCategory = 'life' | 'career' | 'business' | 'financial' | 'health' | 'learning' | 'spiritual';
 export type GoalStatus = 'active' | 'paused' | 'completed';
 export type ProjectStatus = 'active' | 'on_hold' | 'completed' | 'archived';
+export type TransactionType = 'income' | 'expense';
 
 export interface JournalEntry {
   id: string;
@@ -97,6 +98,8 @@ export interface Project {
   color: string;
   status: ProjectStatus;
   progress: number;
+  link: string | null;
+  due_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -122,6 +125,26 @@ export interface AiMessage {
   conversation_id: string;
   role: 'user' | 'assistant';
   content: string;
+  created_at: string;
+}
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  category: string;
+  description: string | null;
+  occurred_on: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DocumentFile {
+  id: string;
+  file_name: string;
+  storage_path: string;
+  mime_type: string;
+  file_size: number;
   created_at: string;
 }
 
