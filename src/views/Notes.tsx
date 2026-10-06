@@ -67,7 +67,7 @@ export function Notes() {
               className="card p-4 text-left group hover:shadow-glow transition relative"
             >
               {n.pinned && <Pin size={13} className="absolute top-3 right-3 text-accent-500 fill-accent-500" />}
-              <h3 className="font-display font-semibold text-sm mb-1.5 pr-5 truncate">{n.title}</h3>
+              <h3 className="font-display font-bold text-sm mb-1.5 pr-5 truncate">{n.title}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-4 whitespace-pre-line mb-3 min-h-[3rem]">
                 {n.content || 'Empty note'}
               </p>
@@ -150,7 +150,7 @@ function EditNoteModal({ note, onClose }: { note: Note; onClose: () => void }) {
     <Modal open={true} onClose={onClose} title="Edit Note">
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="input font-display font-semibold" />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="input font-display font-bold" />
           <button onClick={() => setPinned(!pinned)} className={`btn-ghost !p-2.5 ${pinned ? 'text-accent-500' : ''}`} title="Pin">
             <Pin size={16} className={pinned ? 'fill-accent-500' : ''} />
           </button>

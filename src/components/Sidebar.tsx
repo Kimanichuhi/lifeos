@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useSettings, type AccentName, type ThemeMode } from '@/lib/theme';
 import { hueRGB, type HueName } from '@/lib/colors';
+import { Logo } from '@/components/Logo';
 import type { LucideIcon } from 'lucide-react';
 
 export type ViewKey =
@@ -39,6 +40,7 @@ const NAV: NavItem[] = [
 ];
 
 const ACCENTS: { name: AccentName; color: string }[] = [
+  { name: 'orange', color: 'rgb(232 80 31)' },
   { name: 'blue', color: 'rgb(90 108 236)' },
   { name: 'emerald', color: 'rgb(16 185 129)' },
   { name: 'violet', color: 'rgb(139 92 246)' },
@@ -85,9 +87,7 @@ export function Sidebar({
       >
         {/* Brand */}
         <div className="flex items-center gap-2.5 px-5 h-16 shrink-0">
-          <div className="size-9 rounded-xl bg-accent-600 text-white grid place-items-center shadow-glow shrink-0">
-            <Sparkles size={18} />
-          </div>
+          <Logo className="size-9 rounded-xl shadow-glow" />
           {!collapsed && (
             <div className="overflow-hidden">
               <div className="font-display font-bold text-[15px] leading-tight">Life OS</div>

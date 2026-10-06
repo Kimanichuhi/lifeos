@@ -117,7 +117,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
             <Sparkles size={16} />
             AI Daily Brief
           </div>
-          <p className="text-lg sm:text-xl font-display font-semibold whitespace-pre-line leading-relaxed max-w-2xl text-balance">
+          <p className="text-lg sm:text-xl font-display font-bold whitespace-pre-line leading-relaxed max-w-2xl text-balance">
             {loading ? 'Reading your day…' : brief}
           </p>
           <div className="flex flex-wrap gap-2 mt-5">
@@ -137,7 +137,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Calendar size={18} style={{ color: hueRGB('sky') }} />
-              <h3 className="font-display font-semibold">Today's Schedule</h3>
+              <h3 className="font-display font-bold">Today's Schedule</h3>
             </div>
             <button onClick={() => onNavigate('calendar')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
               Calendar <ChevronRight size={13} />
@@ -190,7 +190,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <CheckSquare size={18} style={{ color: hueRGB('emerald') }} />
-              <h3 className="font-display font-semibold">Priority Tasks</h3>
+              <h3 className="font-display font-bold">Priority Tasks</h3>
             </div>
             <button onClick={() => onNavigate('tasks')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
               All tasks <ChevronRight size={13} />
@@ -213,7 +213,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Flame size={18} style={{ color: hueRGB('orange') }} />
-              <h3 className="font-display font-semibold">Habit Progress</h3>
+              <h3 className="font-display font-bold">Habit Progress</h3>
             </div>
             <button onClick={() => onNavigate('habits')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
               Habits <ChevronRight size={13} />
@@ -244,7 +244,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Target size={18} style={{ color: hueRGB('amber') }} />
-              <h3 className="font-display font-semibold">Goals</h3>
+              <h3 className="font-display font-bold">Goals</h3>
             </div>
             <button onClick={() => onNavigate('goals')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
               Goals <ChevronRight size={13} />
@@ -271,7 +271,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <BookOpen size={18} style={{ color: hueRGB('rose') }} />
-              <h3 className="font-display font-semibold">Journal & Memories</h3>
+              <h3 className="font-display font-bold">Journal & Memories</h3>
             </div>
             <button onClick={() => onNavigate('journal')} className="text-xs text-slate-400 hover:text-accent-500 flex items-center gap-1">
               Journal <ChevronRight size={13} />
@@ -300,7 +300,7 @@ export function Dashboard({ onNavigate, onAskAi }: Props) {
         <div className={cardCls} style={{ borderTop: `3px solid ${hueRGB('violet')}` }}>
           <div className="flex items-center gap-2 mb-4">
             <Clock size={18} style={{ color: hueRGB('violet') }} />
-            <h3 className="font-display font-semibold">Focus Timer</h3>
+            <h3 className="font-display font-bold">Focus Timer</h3>
           </div>
           <FocusTimer />
         </div>

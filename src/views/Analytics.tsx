@@ -117,7 +117,7 @@ function Overview() {
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Clock size={18} className="text-accent-500" />
-            <h3 className="font-display font-semibold">Tasks completed (8 weeks)</h3>
+            <h3 className="font-display font-bold">Tasks completed (8 weeks)</h3>
           </div>
           <div className="flex items-end gap-2 h-40">
             {weeks.map((w, i) => (
@@ -140,7 +140,7 @@ function Overview() {
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Flame size={18} className="text-accent-500" />
-            <h3 className="font-display font-semibold">Habit completion (7 days)</h3>
+            <h3 className="font-display font-bold">Habit completion (7 days)</h3>
           </div>
           <div className="flex items-end gap-2 h-40">
             {last7.map((d, i) => (
@@ -163,7 +163,7 @@ function Overview() {
         <div className="card p-5 lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={18} className="text-accent-500" />
-            <h3 className="font-display font-semibold">Mood trend</h3>
+            <h3 className="font-display font-bold">Mood trend</h3>
           </div>
           {moodEntries.length === 0 ? (
             <p className="text-sm text-slate-400 py-10 text-center">No mood data yet. Journal your day to see trends.</p>

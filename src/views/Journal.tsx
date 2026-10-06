@@ -137,7 +137,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: LucideI
     <div className="card p-5">
       <div className="flex items-center gap-2 mb-4">
         <Icon size={18} className="text-accent-500" />
-        <h3 className="font-display font-semibold">{title}</h3>
+        <h3 className="font-display font-bold">{title}</h3>
       </div>
       <div className="space-y-4">{children}</div>
     </div>

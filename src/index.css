@@ -4,26 +4,34 @@
 
 @layer base {
   :root {
-    --accent-50: 238 242 255;
-    --accent-100: 224 233 255;
-    --accent-200: 199 215 255;
-    --accent-300: 165 188 255;
-    --accent-400: 124 152 255;
-    --accent-500: 90 108 236;
-    --accent-600: 66 80 200;
-    --accent-700: 55 67 170;
-    --accent-800: 47 57 140;
-    --accent-900: 42 50 116;
+    /* Matches ACCENTS.orange in lib/theme.ts (the default accent, sampled
+       from the logo) so the very first paint — before that JS runs —
+       already shows the right color instead of flashing blue. */
+    --accent-50: 255 241 232;
+    --accent-100: 255 224 204;
+    --accent-200: 255 196 158;
+    --accent-300: 255 159 102;
+    --accent-400: 247 116 58;
+    --accent-500: 232 80 31;
+    --accent-600: 199 61 20;
+    --accent-700: 163 48 16;
+    --accent-800: 130 38 14;
+    --accent-900: 105 32 14;
   }
 
   html {
+    /* Set directly (not just via the font-sans utility on body) so Josefin
+       Sans stays the cascade default from the root even if a component
+       changes body's classes — every element inherits from here unless it
+       explicitly opts into font-mono. */
+    font-family: 'Josefin Sans', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
   }
 
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased font-medium;
     margin: 0;
     background: rgb(248 250 252);
     color: rgb(15 23 42);
@@ -74,7 +82,7 @@
     transform: translateY(-2px);
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 px-4 py-2 text-sm disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 px-4 py-2 text-sm disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-primary {
     @apply btn bg-accent-600 text-white hover:bg-accent-500 active:scale-[0.98] shadow-sm;

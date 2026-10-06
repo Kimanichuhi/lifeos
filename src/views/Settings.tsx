@@ -13,6 +13,7 @@ import { Modal } from '@/components/Modal';
 import type { AiMemory } from '@/lib/types';
 
 const ACCENTS: { name: AccentName; color: string }[] = [
+  { name: 'orange', color: 'rgb(232 80 31)' },
   { name: 'blue', color: 'rgb(90 108 236)' },
   { name: 'emerald', color: 'rgb(16 185 129)' },
   { name: 'violet', color: 'rgb(139 92 246)' },
@@ -332,7 +333,7 @@ function Section({ title, icon: Icon, children }: { title: string; icon: LucideI
     <div className="card p-5">
       <div className="flex items-center gap-2 mb-4">
         <Icon size={18} className="text-accent-500" />
-        <h3 className="font-display font-semibold">{title}</h3>
+        <h3 className="font-display font-bold">{title}</h3>
       </div>
       {children}
     </div>

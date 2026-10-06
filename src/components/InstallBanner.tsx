@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Smartphone } from 'lucide-react';
+import { Download, X } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 interface BIPEvent extends Event {
   prompt: () => Promise<void>;
@@ -59,11 +60,9 @@ export function InstallBanner() {
         >
           <div className="card p-4 shadow-2xl border-accent-500/30">
             <div className="flex items-start gap-3">
-              <div className="size-11 rounded-xl bg-accent-500/10 text-accent-500 grid place-items-center shrink-0">
-                <Smartphone size={20} />
-              </div>
+              <Logo className="size-11 rounded-xl shrink-0" />
               <div className="flex-1 min-w-0">
-                <h3 className="font-display font-semibold text-sm">Install Life OS</h3>
+                <h3 className="font-display font-bold text-sm">Install Life OS</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Add to your home screen for a full-screen app experience with offline access and notifications.
                 </p>

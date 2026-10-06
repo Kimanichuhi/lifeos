@@ -1,49 +1,42 @@
+// Regenerates every favicon/PWA icon in public/icons/ from the brand
+// artwork (public/icons/nerd icon.jpeg). Run manually with:
+//   node scripts/gen-icons.mjs
+// Re-run this after replacing the source artwork rather than editing the
+// generated PNGs by hand.
 import sharp from 'sharp';
-import { writeFileSync } from 'node:fs';
 
-const accent = '#5a6cec';
-const dark = '#0a0b14';
+const SRC = 'public/icons/nerd icon.jpeg';
+// Sampled from the source artwork's own background so padding blends in
+// seamlessly instead of leaving a visible seam.
+const BG = { r: 247, g: 244, b: 239, alpha: 1 };
 
-function svgIcon(size, maskable = false) {
-  const pad = maskable ? size * 0.18 : size * 0.08;
-  const inner = size - pad * 2;
-  const cx = size / 2;
-  const r = inner * 0.42;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${accent}"/>
-      <stop offset="100%" stop-color="#4250a8"/>
-    </linearGradient>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="${size * 0.02}" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-  </defs>
-  <rect width="${size}" height="${size}" rx="${maskable ? 0 : size * 0.22}" fill="url(#bg)"/>
-  <g transform="translate(${cx} ${cx})" filter="url(#glow)">
-    <circle r="${r}" fill="none" stroke="white" stroke-width="${size * 0.035}" stroke-linecap="round" stroke-dasharray="${r * 0.7} ${r * 1.6}" transform="rotate(-90)"/>
-    <path d="M0 ${-r * 0.45} L${r * 0.28} ${-r * 0.05} L0 ${r * 0.18} L${-r * 0.28} ${-r * 0.05} Z" fill="white"/>
-    <circle r="${r * 0.12}" fill="white"/>
-  </g>
-</svg>`;
+async function squareIcon(size, outPath) {
+  await sharp(SRC)
+    .resize(size, size, { fit: 'contain', background: BG })
+    .png()
+    .toFile(outPath);
+  console.log('wrote', outPath, `${size}x${size}`);
+}
+
+// Maskable icons get cropped to a circle/squircle by the OS (Android home
+// screens, etc.), so the art is shrunk and centered on a full-bleed canvas
+// to keep everything inside the safe zone.
+async function maskableIcon(size, outPath) {
+  const inner = Math.round(size * 0.72);
+  const art = await sharp(SRC).resize(inner, inner, { fit: 'contain', background: BG }).png().toBuffer();
+  await sharp({ create: { width: size, height: size, channels: 4, background: BG } })
+    .composite([{ input: art, gravity: 'center' }])
+    .png()
+    .toFile(outPath);
+  console.log('wrote', outPath, `${size}x${size}`, '(maskable, safe-zone padded)');
 }
 
 async function gen() {
-  for (const { size, file, maskable } of [
-    { size: 192, file: 'public/icons/icon-192.png', maskable: false },
-    { size: 512, file: 'public/icons/icon-512.png', maskable: false },
-    { size: 512, file: 'public/icons/icon-maskable-512.png', maskable: true },
-    { size: 180, file: 'public/icons/apple-touch-icon.png', maskable: false },
-  ]) {
-    const svg = Buffer.from(svgIcon(size, maskable));
-    await sharp(svg).png().toFile(file);
-    console.log('wrote', file);
-  }
-  // favicon
-  const svg = Buffer.from(svgIcon(64, false));
-  await sharp(svg).png().toFile('public/icons/favicon.png');
-  console.log('wrote favicon');
+  await squareIcon(64, 'public/icons/favicon.png');
+  await squareIcon(180, 'public/icons/apple-touch-icon.png');
+  await squareIcon(192, 'public/icons/icon-192.png');
+  await squareIcon(512, 'public/icons/icon-512.png');
+  await maskableIcon(512, 'public/icons/icon-maskable-512.png');
 }
 
 gen().catch((e) => { console.error(e); process.exit(1); });

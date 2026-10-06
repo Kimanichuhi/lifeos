@@ -51,7 +51,7 @@ function Section({ title, icon: Icon, action, children }: { title: string; icon:
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Icon size={18} className="text-accent-500" />
-          <h3 className="font-display font-semibold">{title}</h3>
+          <h3 className="font-display font-bold">{title}</h3>
         </div>
         {action}
       </div>
@@ -117,7 +117,7 @@ function SnippetsSection() {
                 className="card p-3.5 text-left group hover:shadow-glow transition"
               >
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <h4 className="font-display font-semibold text-sm truncate">{s.title}</h4>
+                  <h4 className="font-display font-bold text-sm truncate">{s.title}</h4>
                   <button
                     onClick={(e) => { e.stopPropagation(); remove(s.id); }}
                     className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100 shrink-0"

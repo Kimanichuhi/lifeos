@@ -151,7 +151,7 @@ export function Vault() {
                     <Icon size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-display font-semibold text-sm truncate">{item.decryptedTitle}</h3>
+                    <h3 className="font-display font-bold text-sm truncate">{item.decryptedTitle}</h3>
                     <p className="text-xs text-slate-400 capitalize mt-0.5">{item.category.replace('_', ' ')}</p>
                     <p className="text-[10px] text-slate-400 mt-1">
                       {new Date(item.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}

@@ -39,7 +39,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
           >
             {title && (
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-slate-800/70">
-                <h3 className="font-display font-semibold text-base">{title}</h3>
+                <h3 className="font-display font-bold text-base">{title}</h3>
                 <button onClick={onClose} className="btn-ghost !p-1.5 !rounded-lg">
                   <X size={18} />
                 </button>

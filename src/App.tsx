@@ -128,8 +128,9 @@ export default function App() {
   const toasts = useToastStore((s) => s.toasts);
   const removeToast = useToastStore((s) => s.remove);
 
-  // Lock screen gate
-  if (authStatus !== 'unlocked') {
+  // Lock screen gate — bypassed under `vite dev`. Supabase RLS still requires a
+  // signed-in owner, so data won't load locally until you sign in.
+  if (!import.meta.env.DEV && authStatus !== 'unlocked') {
     return (
       <>
         <AuthScreen />

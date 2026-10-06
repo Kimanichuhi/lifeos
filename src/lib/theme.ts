@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { create } from './tinyStore';
 
-export type AccentName = 'blue' | 'emerald' | 'violet' | 'amber' | 'rose' | 'cyan';
+export type AccentName = 'orange' | 'blue' | 'emerald' | 'violet' | 'amber' | 'rose' | 'cyan';
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 interface AccentScale {
@@ -9,6 +9,13 @@ interface AccentScale {
 }
 
 const ACCENTS: Record<AccentName, AccentScale> = {
+  // The app's brand color, sampled from the logo artwork (public/icons/nerd
+  // icon.jpeg) — the cap and "NERD" text are ~#e8501f. Default accent.
+  orange: {
+    50: '255 241 232', 100: '255 224 204', 200: '255 196 158', 300: '255 159 102',
+    400: '247 116 58', 500: '232 80 31', 600: '199 61 20', 700: '163 48 16',
+    800: '130 38 14', 900: '105 32 14',
+  },
   blue: {
     50: '238 242 255', 100: '224 233 255', 200: '199 215 255', 300: '165 188 255',
     400: '124 152 255', 500: '90 108 236', 600: '66 80 200', 700: '55 67 170',
@@ -66,7 +73,7 @@ function applyAccent(accent: AccentName) {
 
 export const useSettings = create<SettingsState>((set, get) => ({
   theme: (localStorage.getItem('lifeos-theme') as ThemeMode) || 'system',
-  accent: (localStorage.getItem('lifeos-accent') as AccentName) || 'blue',
+  accent: (localStorage.getItem('lifeos-accent') as AccentName) || 'orange',
   setTheme: (theme) => {
     localStorage.setItem('lifeos-theme', theme);
     applyTheme(theme);

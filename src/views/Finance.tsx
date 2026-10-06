@@ -111,7 +111,7 @@ export function Finance() {
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={18} className="text-accent-500" />
-            <h3 className="font-display font-semibold">Monthly overview</h3>
+            <h3 className="font-display font-bold">Monthly overview</h3>
           </div>
           {loading && (
             <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-8 rounded-lg shimmer-bg animate-shimmer" />)}</div>
@@ -145,7 +145,7 @@ export function Finance() {
         <div className="card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Wallet size={18} className="text-accent-500" />
-            <h3 className="font-display font-semibold">Recent transactions</h3>
+            <h3 className="font-display font-bold">Recent transactions</h3>
           </div>
           {loading && (
             <div className="space-y-1.5">{[...Array(5)].map((_, i) => <div key={i} className="h-11 rounded-lg shimmer-bg animate-shimmer" />)}</div>

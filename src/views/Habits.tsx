@@ -110,7 +110,7 @@ export function Habits() {
                     <Icon size={18} />
                   </div>
                   <div>
-                    <div className="font-display font-semibold">{h.name}</div>
+                    <div className="font-display font-bold">{h.name}</div>
                     {h.description && <div className="text-xs text-slate-400">{h.description}</div>}
                   </div>
                 </div>

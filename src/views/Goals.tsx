@@ -94,7 +94,7 @@ export function Goals() {
                       <Target size={17} />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-display font-semibold truncate">{g.title}</h3>
+                      <h3 className="font-display font-bold truncate">{g.title}</h3>
                       <div className="flex items-center gap-2 text-xs text-slate-400">
                         <span className="capitalize">{g.category}</span>
                         {g.target_date && (

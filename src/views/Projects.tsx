@@ -100,7 +100,7 @@ export function Projects() {
                       <FolderKanban size={17} />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-display font-semibold truncate">{p.name}</h3>
+                      <h3 className="font-display font-bold truncate">{p.name}</h3>
                       {p.description && <p className="text-xs text-slate-400 line-clamp-2">{p.description}</p>}
                     </div>
                   </div>
