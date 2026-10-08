@@ -153,9 +153,20 @@ export function Workout({ autoStart = false, onAutoStarted }: { autoStart?: bool
       </div>
 
       {/* Week plan */}
-      <div className="card p-4 mb-4">
+      <div className="card p-4 mb-4 flex gap-4">
+        <img
+          src="/workout/coach.webp"
+          alt="Your coach"
+          width={640}
+          height={960}
+          className="hidden md:block w-28 self-stretch object-cover object-top rounded-xl bg-slate-100 dark:bg-slate-800"
+        />
+        <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display font-bold">This week</h3>
+          <div>
+            <h3 className="font-display font-bold">This week</h3>
+            <p className="text-xs text-slate-400">20 minutes a day · follow your coach</p>
+          </div>
           <span className="text-xs text-slate-400">{doneThisWeek} / 7 done</span>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
@@ -192,6 +203,7 @@ export function Workout({ autoStart = false, onAutoStarted }: { autoStart?: bool
             <div className="text-sm font-semibold leading-tight mt-0.5">Custom</div>
             <div className="text-[11px] text-slate-400 mt-1">Pick exercises</div>
           </button>
+        </div>
         </div>
       </div>
 

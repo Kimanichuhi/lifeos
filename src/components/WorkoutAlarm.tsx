@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlarmClock, Play, BellOff, Clock } from 'lucide-react';
-import { WorkoutFigure, EXERCISES } from '@/components/WorkoutFigure';
 import { showNotification } from '@/lib/notifications';
 import { useWorkout, WEEK_PLAN, weekdayIndex, dateKey, planSeconds } from '@/lib/workoutPlan';
 
@@ -128,7 +127,6 @@ export function WorkoutAlarm({ onStart }: { onStart: () => void }) {
   }
 
   const doneToday = completed.includes(dateKey());
-  const demo = EXERCISES.find((e) => e.id === today.exercises[0]) ?? EXERCISES[0];
 
   return (
     <AnimatePresence>
@@ -149,13 +147,22 @@ export function WorkoutAlarm({ onStart }: { onStart: () => void }) {
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
           >
-            <motion.div
-              className="size-14 mx-auto rounded-2xl grid place-items-center bg-accent-500/10 text-accent-500"
-              animate={{ rotate: [0, -14, 14, -14, 14, 0] }}
-              transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 0.6 }}
-            >
-              <AlarmClock size={28} />
-            </motion.div>
+            <div className="relative w-32 h-40 mx-auto">
+              <img
+                src="/workout/coach.webp"
+                alt="Your coach"
+                width={640}
+                height={960}
+                className="size-full object-cover object-top rounded-2xl bg-slate-100 dark:bg-slate-800"
+              />
+              <motion.div
+                className="absolute -bottom-2 -right-3 size-11 rounded-xl grid place-items-center bg-accent-500 text-white shadow-lg"
+                animate={{ rotate: [0, -14, 14, -14, 14, 0] }}
+                transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 0.6 }}
+              >
+                <AlarmClock size={22} />
+              </motion.div>
+            </div>
             <div className="mt-3 text-xs font-semibold uppercase tracking-wider text-accent-500">
               {String(alarm.hour).padStart(2, '0')}:{String(alarm.minute).padStart(2, '0')} · Workout alarm
             </div>
@@ -164,8 +171,7 @@ export function WorkoutAlarm({ onStart }: { onStart: () => void }) {
               {today.short} — <span className="font-semibold text-slate-600 dark:text-slate-300">{today.focus}</span> · {Math.round(planSeconds(today) / 60)} min
               {doneToday && ' · already done today'}
             </p>
-            <WorkoutFigure exercise={demo} playing className="w-40 h-40 mx-auto" />
-            <div className="space-y-2">
+            <div className="space-y-2 mt-5">
               <button className="btn-primary w-full justify-center py-2.5" onClick={start}>
                 <Play size={16} /> Start today's workout
               </button>

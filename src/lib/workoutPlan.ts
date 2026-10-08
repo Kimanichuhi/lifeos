@@ -12,16 +12,17 @@ export interface DayPlan {
   restSec: number;
 }
 
-// A balanced bodyweight week: harder days alternate with lighter ones and
-// Sunday is active recovery, so it can be repeated week after week.
+// A balanced 20-minute bodyweight week: harder days alternate with lighter
+// ones and Sunday is active recovery, so it can be repeated week after week.
+// Each day's sets × work + rests comes to ~20 minutes (see planSeconds).
 export const WEEK_PLAN: DayPlan[] = [
-  { day: 0, short: 'Mon', focus: 'Full body', exercises: ['jumping-jacks', 'squats', 'push-ups', 'lunges', 'plank'], rounds: 2, workSec: 30, restSec: 15 },
-  { day: 1, short: 'Tue', focus: 'Cardio burn', exercises: ['jumping-jacks', 'high-knees', 'squats', 'high-knees'], rounds: 2, workSec: 40, restSec: 20 },
-  { day: 2, short: 'Wed', focus: 'Legs', exercises: ['squats', 'lunges', 'high-knees', 'squats', 'lunges'], rounds: 2, workSec: 35, restSec: 15 },
-  { day: 3, short: 'Thu', focus: 'Upper body & core', exercises: ['push-ups', 'plank', 'jumping-jacks', 'push-ups', 'plank'], rounds: 2, workSec: 30, restSec: 20 },
-  { day: 4, short: 'Fri', focus: 'HIIT', exercises: ['high-knees', 'squats', 'push-ups', 'jumping-jacks'], rounds: 3, workSec: 40, restSec: 15 },
-  { day: 5, short: 'Sat', focus: 'Strength endurance', exercises: ['lunges', 'push-ups', 'squats', 'plank'], rounds: 3, workSec: 45, restSec: 20 },
-  { day: 6, short: 'Sun', focus: 'Active recovery', exercises: ['jumping-jacks', 'lunges', 'plank'], rounds: 2, workSec: 30, restSec: 30 },
+  { day: 0, short: 'Mon', focus: 'Full body', exercises: ['jumping-jacks', 'squats', 'push-ups', 'lunges', 'plank'], rounds: 4, workSec: 45, restSec: 15 },
+  { day: 1, short: 'Tue', focus: 'Cardio burn', exercises: ['jumping-jacks', 'high-knees', 'squats', 'high-knees'], rounds: 5, workSec: 40, restSec: 20 },
+  { day: 2, short: 'Wed', focus: 'Legs', exercises: ['squats', 'lunges', 'high-knees', 'squats', 'lunges'], rounds: 4, workSec: 45, restSec: 15 },
+  { day: 3, short: 'Thu', focus: 'Upper body & core', exercises: ['push-ups', 'plank', 'jumping-jacks', 'push-ups', 'plank'], rounds: 4, workSec: 45, restSec: 15 },
+  { day: 4, short: 'Fri', focus: 'HIIT', exercises: ['high-knees', 'squats', 'push-ups', 'jumping-jacks'], rounds: 6, workSec: 40, restSec: 10 },
+  { day: 5, short: 'Sat', focus: 'Strength endurance', exercises: ['lunges', 'push-ups', 'squats', 'plank'], rounds: 4, workSec: 60, restSec: 15 },
+  { day: 6, short: 'Sun', focus: 'Active recovery', exercises: ['jumping-jacks', 'lunges', 'squats', 'plank'], rounds: 4, workSec: 50, restSec: 25 },
 ];
 
 /** Monday-based index for a date (0 = Monday). */

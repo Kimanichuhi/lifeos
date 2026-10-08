@@ -29,7 +29,7 @@ export interface Exercise {
 
 const STAND_FRONT: Pose = {
   head: [100, 40], neck: [100, 54], hip: [100, 105],
-  elbowL: [84, 80], handL: [81, 103], elbowR: [116, 80], handR: [119, 103],
+  elbowL: [77, 80], handL: [74, 103], elbowR: [123, 80], handR: [126, 103],
   kneeL: [94, 142], footL: [92, 180], kneeR: [106, 142], footR: [108, 180],
 };
 
@@ -115,9 +115,13 @@ function lerpPose(a: Pose, b: Pose, t: number): Pose {
 
 const ease = (u: number) => (1 - Math.cos(Math.PI * u)) / 2;
 
-const SKIN = '#9a6440';
-const SKIN_SHADE = '#7d4f31';
-const HAIR = '#1f1a17';
+// Styled after the coach illustration (public/fitness.png): white tank top,
+// black joggers, white sneakers. Colors sampled from the artwork.
+const SKIN = '#a8653a';
+const SKIN_SHADE = '#86492a';
+const FACE_SRC = '/workout/face.webp';
+/** Where the head sits inside face.webp (fractions of the image), from gen-workout-art. */
+const FACE_BOX = { size: 38, cx: 0.48, cy: 0.455 };
 
 const add = (a: Pt, b: Pt): Pt => [a[0] + b[0], a[1] + b[1]];
 const sub = (a: Pt, b: Pt): Pt => [a[0] - b[0], a[1] - b[1]];
@@ -146,8 +150,8 @@ function sockets(p: Pose, facing: 0 | 1) {
   const down = unit(sub(p.hip, p.neck));
   const across: Pt = [down[1], -down[0]]; // points to the figure's "R" (screen-right in front view)
   const chest = add(p.neck, scale(down, 6));
-  const sw = facing ? 1.5 : 10;
-  const hw = facing ? 1 : 5;
+  const sw = facing ? 1.5 : 15;
+  const hw = facing ? 1 : 5.5;
   return {
     chest,
     shoulderL: add(chest, scale(across, -sw)), shoulderR: add(chest, scale(across, sw)),
@@ -155,40 +159,40 @@ function sockets(p: Pose, facing: 0 | 1) {
   };
 }
 
-interface Palette { skin: string; shirt: string; shorts: string; shoe: string }
+interface Palette { skin: string; pants: string; cuff: string }
+
+const INK = { stroke: 'var(--wf-ink)', strokeWidth: 1.1, strokeLinejoin: 'round' as const };
 
 function Arm({ shoulder, elbow, hand, c }: { shoulder: Pt; elbow: Pt; hand: Pt; c: Palette }) {
   return (
-    <>
-      <path d={capsule(shoulder, elbow, 5.2, 4.3)} fill={c.skin} />
-      <path d={capsule(elbow, hand, 4.3, 3.4)} fill={c.skin} />
-      <circle cx={hand[0]} cy={hand[1]} r="4" fill={c.skin} />
-      {/* short sleeve */}
-      <path d={capsule(shoulder, mix(shoulder, elbow, 0.5), 6.6, 5.6)} style={{ fill: c.shirt }} />
-    </>
+    <g fill={c.skin} {...INK}>
+      <path d={capsule(shoulder, elbow, 6.2, 4.9)} />
+      <path d={capsule(elbow, hand, 4.9, 3.8)} />
+      <circle cx={hand[0]} cy={hand[1]} r="4.4" />
+    </g>
   );
 }
 
 function Leg({ hip, knee, foot, facing, c }: { hip: Pt; knee: Pt; foot: Pt; facing: 0 | 1; c: Palette }) {
   const shin = unit(sub(foot, knee));
-  const ankle = sub(foot, scale(shin, 3));
+  const ankle = sub(foot, scale(shin, 3.5));
   // The shoe sits perpendicular to the shin, toes toward the facing side.
   const toeDir: Pt = [shin[1], -shin[0]];
-  const heel = facing ? sub(ankle, scale(toeDir, 3)) : add(ankle, [-3.5, 0]);
-  const toe = facing ? add(ankle, scale(toeDir, 10)) : add(ankle, [3.5, 0]);
+  const heel = facing ? sub(ankle, scale(toeDir, 3.5)) : add(ankle, [-4, 0]);
+  const toe = facing ? add(ankle, scale(toeDir, 11)) : add(ankle, [4, 0]);
   return (
-    <>
-      <path d={capsule(hip, knee, 7.6, 5.6)} fill={c.skin} />
-      <path d={capsule(knee, ankle, 5.6, 3.6)} fill={c.skin} />
-      <path d={capsule(heel, toe, 3.8, 3.4)} style={{ fill: c.shoe }} />
-      {/* shorts */}
-      <path d={capsule(hip, mix(hip, knee, 0.5), 7.6, 6.4)} style={{ fill: c.shorts }} />
-    </>
+    <g {...INK}>
+      <path d={capsule(knee, mix(knee, ankle, 0.82), 7, 5.7)} fill={c.pants} />
+      {/* jogger cuff */}
+      <path d={capsule(mix(knee, ankle, 0.78), ankle, 5.5, 4.8)} fill={c.cuff} />
+      <path d={capsule(hip, knee, 9, 7.2)} fill={c.pants} />
+      <path d={capsule(heel, toe, 4.2, 3.6)} fill="var(--wf-shoe)" />
+    </g>
   );
 }
 
-const NEAR: Palette = { skin: SKIN, shirt: 'rgb(var(--accent-500))', shorts: 'var(--wf-shorts)', shoe: 'var(--wf-shoe)' };
-const FAR: Palette = { skin: SKIN_SHADE, shirt: 'rgb(var(--accent-700))', shorts: 'var(--wf-shorts-far)', shoe: 'var(--wf-shoe)' };
+const NEAR: Palette = { skin: SKIN, pants: 'var(--wf-pants)', cuff: 'var(--wf-cuff)' };
+const FAR: Palette = { skin: SKIN_SHADE, pants: 'var(--wf-pants-far)', cuff: 'var(--wf-pants-far)' };
 
 /**
  * Animated athlete figure for one exercise. `onRep` fires each time the
@@ -236,14 +240,18 @@ export function WorkoutFigure({ exercise, playing, onRep, className }: {
   const p = pose;
   const { facing } = exercise;
   const s = sockets(p, facing);
-  const [chestR, waistR] = facing ? [9.5, 8.5] : [11.5, 9.5];
+  const [chestR, waistR] = facing ? [11, 9.5] : [13.5, 11];
+  const down = unit(sub(p.hip, p.neck));
   const tilt = unit(sub(p.head, p.neck));
+  const headDeg = (Math.atan2(tilt[0], -tilt[1]) * 180) / Math.PI * 0.6;
   const shadowX = (p.footL[0] + p.footR[0] + p.hip[0]) / 3;
+  const { size, cx, cy } = FACE_BOX;
 
   return (
     <svg
       viewBox="0 0 200 200"
-      className={`[--wf-shorts:#334155] [--wf-shorts-far:#1e293b] [--wf-shoe:#0f172a] dark:[--wf-shorts:#94a3b8] dark:[--wf-shorts-far:#64748b] dark:[--wf-shoe:#e2e8f0] ${className ?? ''}`}
+      className={`[--wf-ink:#1f2328] [--wf-pants:#262a33] [--wf-pants-far:#16181d] [--wf-cuff:#1c1f26] [--wf-shoe:#f8fafc] [--wf-tank:#ffffff]
+        dark:[--wf-ink:#64748b] dark:[--wf-pants:#3a404d] dark:[--wf-pants-far:#2a2f39] dark:[--wf-cuff:#323844] ${className ?? ''}`}
       role="img"
       aria-label={`${exercise.name} demonstration`}
     >
@@ -254,23 +262,27 @@ export function WorkoutFigure({ exercise, playing, onRep, className }: {
       <Leg hip={s.hipL} knee={p.kneeL} foot={p.footL} facing={facing} c={FAR} />
       <Arm shoulder={s.shoulderL} elbow={p.elbowL} hand={p.handL} c={FAR} />
 
-      {/* neck, shirt, waistband */}
-      <path d={capsule(p.neck, mix(p.neck, p.head, 0.5), 4.4, 4.4)} fill={SKIN} />
-      <path d={capsule(s.chest, p.hip, chestR, waistR)} style={{ fill: NEAR.shirt }} />
-      <path d={capsule(mix(p.neck, p.hip, 0.85), p.hip, waistR + 0.5, waistR + 1)} style={{ fill: NEAR.shorts }} />
+      {/* waistband, then the tank top hanging over it */}
+      <path d={capsule(mix(p.neck, p.hip, 0.8), p.hip, waistR + 0.6, waistR + 1.2)} fill="var(--wf-pants)" {...INK} />
+      {/* torso starts below the neck so the tank's rounded top sits at the shoulders */}
+      <path d={capsule(add(p.neck, scale(down, chestR - 3)), add(p.hip, scale(down, 2)), chestR, waistR)} fill="var(--wf-tank)" {...INK} />
+      <path d={capsule(add(p.neck, scale(down, 4)), mix(p.neck, p.head, 0.55), 5.2, 4.8)} fill={SKIN} {...INK} />
+      {/* scoop neckline */}
+      <path d={capsule(p.neck, add(p.neck, scale(down, 6)), 5, 3.6)} fill={SKIN} />
 
       {/* near side */}
       <Leg hip={s.hipR} knee={p.kneeR} foot={p.footR} facing={facing} c={NEAR} />
       <Arm shoulder={s.shoulderR} elbow={p.elbowR} hand={p.handR} c={NEAR} />
 
-      {/* head: hair sits behind and above the face; ear marks the side view */}
-      <ellipse
-        cx={p.head[0] + tilt[0] * 2.5 - facing * 2.2}
-        cy={p.head[1] + tilt[1] * 2.5}
-        rx="11.2" ry="10.2" fill={HAIR}
+      {/* the coach's own face */}
+      <image
+        href={FACE_SRC}
+        width={size}
+        height={size}
+        x={p.head[0] - size * cx}
+        y={p.head[1] - size * cy}
+        transform={`rotate(${headDeg.toFixed(1)} ${f1(p.head[0])} ${f1(p.head[1])})`}
       />
-      <circle cx={p.head[0] - tilt[0] * 1.6 + facing * 1.6} cy={p.head[1] - tilt[1] * 1.6} r="9.6" fill={SKIN} />
-      {facing === 1 && <circle cx={p.head[0] - 2.5} cy={p.head[1] + 1.5} r="2.3" fill={SKIN_SHADE} />}
     </svg>
   );
 }
