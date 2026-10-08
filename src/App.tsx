@@ -24,6 +24,7 @@ import { Projects } from '@/views/Projects';
 import { Analytics } from '@/views/Analytics';
 import { Finance } from '@/views/Finance';
 import { Workout } from '@/views/Workout';
+import { WorkoutAlarm } from '@/components/WorkoutAlarm';
 import { Documents } from '@/views/Documents';
 import { Dev } from '@/views/Dev';
 import { Vault } from '@/views/Vault';
@@ -63,6 +64,8 @@ export default function App() {
   const [newNoteSignal, setNewNoteSignal] = useState(0);
   const [newJournalSignal, setNewJournalSignal] = useState(0);
   const [newEventSignal, setNewEventSignal] = useState(0);
+  const [workoutSignal, setWorkoutSignal] = useState(0);
+  const [workoutAutoStart, setWorkoutAutoStart] = useState(false);
 
   const navigate = useCallback((v: ViewKey) => {
     setView(v);
@@ -178,7 +181,9 @@ export default function App() {
               {view === 'journal' && <Journal key={newJournalSignal} />}
               {view === 'tasks' && <Tasks key={newTaskSignal} />}
               {view === 'habits' && <Habits />}
-              {view === 'workout' && <Workout />}
+              {view === 'workout' && (
+                <Workout key={workoutSignal} autoStart={workoutAutoStart} onAutoStarted={() => setWorkoutAutoStart(false)} />
+              )}
               {view === 'notes' && <Notes key={newNoteSignal} />}
               {view === 'calendar' && <Calendar key={newEventSignal} />}
               {view === 'goals' && <Goals />}
@@ -213,6 +218,7 @@ export default function App() {
         navigate(v);
       }} />
       <InstallBanner />
+      <WorkoutAlarm onStart={() => { setWorkoutAutoStart(true); setWorkoutSignal((s) => s + 1); navigate('workout'); }} />
       <PermissionsPrompt />
       <Toaster toasts={toasts} remove={removeToast} />
     </div>
