@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import {
   Home, Bot, BookOpen, Calendar, CheckSquare, Target, Flame,
   FolderKanban, StickyNote, FileText, Wallet, BarChart3, Settings,
-  Search, Sparkles, Moon, Sun, Monitor, Shield, Code2,
+  Search, Sparkles, Moon, Sun, Monitor, Shield, Code2, Dumbbell,
 } from 'lucide-react';
 import { useSettings, type AccentName, type ThemeMode } from '@/lib/theme';
 import { hueRGB, type HueName } from '@/lib/colors';
@@ -11,7 +11,7 @@ import type { LucideIcon } from 'lucide-react';
 
 export type ViewKey =
   | 'home' | 'assistant' | 'journal' | 'calendar' | 'tasks' | 'goals'
-  | 'habits' | 'projects' | 'notes' | 'documents' | 'finance' | 'analytics'
+  | 'habits' | 'workout' | 'projects' | 'notes' | 'documents' | 'finance' | 'analytics'
   | 'dev' | 'vault' | 'settings';
 
 interface NavItem {
@@ -29,6 +29,7 @@ const NAV: NavItem[] = [
   { key: 'tasks', label: 'Tasks', icon: CheckSquare, hue: 'emerald' },
   { key: 'goals', label: 'Goals', icon: Target, hue: 'amber' },
   { key: 'habits', label: 'Habits', icon: Flame, hue: 'orange' },
+  { key: 'workout', label: 'Workout', icon: Dumbbell, hue: 'rose' },
   { key: 'projects', label: 'Projects', icon: FolderKanban, hue: 'cyan' },
   { key: 'notes', label: 'Notes', icon: StickyNote, hue: 'yellow' },
   { key: 'documents', label: 'Documents', icon: FileText, hue: 'teal' },

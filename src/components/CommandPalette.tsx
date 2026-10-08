@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Search, Home, Bot, BookOpen, Calendar, CheckSquare, Target, Flame,
+  Search, Home, Bot, BookOpen, Calendar, CheckSquare, Target, Flame, Dumbbell,
   FolderKanban, StickyNote, FileText, Wallet, BarChart3, Settings, Code2,
   CornerDownLeft, ArrowUp, ArrowDown,
 } from 'lucide-react';
@@ -47,6 +47,7 @@ export function CommandPalette({
       { key: 'tasks', label: 'Tasks', icon: CheckSquare },
       { key: 'goals', label: 'Goals', icon: Target },
       { key: 'habits', label: 'Habits', icon: Flame },
+      { key: 'workout', label: 'Workout', icon: Dumbbell },
       { key: 'projects', label: 'Projects', icon: FolderKanban },
       { key: 'notes', label: 'Notes', icon: StickyNote },
       { key: 'documents', label: 'Documents', icon: FileText },

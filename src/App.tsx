@@ -23,6 +23,7 @@ import { Goals } from '@/views/Goals';
 import { Projects } from '@/views/Projects';
 import { Analytics } from '@/views/Analytics';
 import { Finance } from '@/views/Finance';
+import { Workout } from '@/views/Workout';
 import { Documents } from '@/views/Documents';
 import { Dev } from '@/views/Dev';
 import { Vault } from '@/views/Vault';
@@ -36,6 +37,7 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   tasks: { title: 'Tasks', subtitle: 'What needs your attention.' },
   goals: { title: 'Goals', subtitle: 'Where you are headed.' },
   habits: { title: 'Habits', subtitle: 'Small steps, every day.' },
+  workout: { title: 'Workout', subtitle: 'Move a little, every day.' },
   projects: { title: 'Projects', subtitle: 'Your work, organized.' },
   notes: { title: 'Notes', subtitle: 'Your second brain.' },
   documents: { title: 'Documents', subtitle: 'Your files, searchable by AI.' },
@@ -92,7 +94,7 @@ export default function App() {
         const map: Record<string, ViewKey> = {
           h: 'home', a: 'assistant', j: 'journal', c: 'calendar', t: 'tasks',
           g: 'goals', f: 'habits', p: 'projects', n: 'notes', d: 'documents',
-          v: 'vault',
+          v: 'vault', w: 'workout',
         };
         const v = map[e.key.toLowerCase()];
         if (v) { e.preventDefault(); navigate(v); }
@@ -176,6 +178,7 @@ export default function App() {
               {view === 'journal' && <Journal key={newJournalSignal} />}
               {view === 'tasks' && <Tasks key={newTaskSignal} />}
               {view === 'habits' && <Habits />}
+              {view === 'workout' && <Workout />}
               {view === 'notes' && <Notes key={newNoteSignal} />}
               {view === 'calendar' && <Calendar key={newEventSignal} />}
               {view === 'goals' && <Goals />}
