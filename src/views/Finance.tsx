@@ -217,6 +217,7 @@ function NewTransactionModal({ open, onClose }: { open: boolean; onClose: () => 
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(EXPENSE_CATEGORIES[0]);
+  const [customCategory, setCustomCategory] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
@@ -227,12 +228,14 @@ function NewTransactionModal({ open, onClose }: { open: boolean; onClose: () => 
   function setTransactionType(next: TransactionType) {
     setType(next);
     setCategory(next === 'income' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0]);
+    setCustomCategory('');
   }
 
   function reset() {
     setType('expense');
     setAmount('');
     setCategory(EXPENSE_CATEGORIES[0]);
+    setCustomCategory('');
     setDescription('');
     setDate(new Date().toISOString().slice(0, 10));
   }
@@ -240,11 +243,13 @@ function NewTransactionModal({ open, onClose }: { open: boolean; onClose: () => 
   async function submit() {
     const value = Number(amount);
     if (!value || value <= 0) { toast.error('Enter a valid amount'); return; }
+    // Picking "Other" lets the user name the category; a blank name stays "Other".
+    const finalCategory = category === 'Other' ? customCategory.trim() || 'Other' : category;
     setSaving(true);
     const { error } = await createTransaction({
       type,
       amount: value,
-      category,
+      category: finalCategory,
       description: description.trim() || null,
       occurred_on: date,
     });
@@ -300,6 +305,20 @@ function NewTransactionModal({ open, onClose }: { open: boolean; onClose: () => 
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" />
           </div>
         </div>
+
+        {category === 'Other' && (
+          <div>
+            <div className="label mb-1.5">Category name</div>
+            <input
+              autoFocus
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder={type === 'income' ? 'e.g. Freelance, Refund' : 'e.g. Gym, Gifts, School fees'}
+              maxLength={40}
+              className="input"
+            />
+          </div>
+        )}
 
         <div>
           <div className="label mb-1.5">Description</div>
