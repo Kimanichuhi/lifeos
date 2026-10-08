@@ -119,9 +119,7 @@ const ease = (u: number) => (1 - Math.cos(Math.PI * u)) / 2;
 // black joggers, white sneakers. Colors sampled from the artwork.
 const SKIN = '#a8653a';
 const SKIN_SHADE = '#86492a';
-const FACE_SRC = '/workout/face.webp';
-/** Where the head sits inside face.webp (fractions of the image), from gen-workout-art. */
-const FACE_BOX = { size: 38, cx: 0.48, cy: 0.455 };
+const HAIR = '#1a1411';
 
 const add = (a: Pt, b: Pt): Pt => [a[0] + b[0], a[1] + b[1]];
 const sub = (a: Pt, b: Pt): Pt => [a[0] - b[0], a[1] - b[1]];
@@ -243,9 +241,7 @@ export function WorkoutFigure({ exercise, playing, onRep, className }: {
   const [chestR, waistR] = facing ? [11, 9.5] : [13.5, 11];
   const down = unit(sub(p.hip, p.neck));
   const tilt = unit(sub(p.head, p.neck));
-  const headDeg = (Math.atan2(tilt[0], -tilt[1]) * 180) / Math.PI * 0.6;
   const shadowX = (p.footL[0] + p.footR[0] + p.hip[0]) / 3;
-  const { size, cx, cy } = FACE_BOX;
 
   return (
     <svg
@@ -274,15 +270,18 @@ export function WorkoutFigure({ exercise, playing, onRep, className }: {
       <Leg hip={s.hipR} knee={p.kneeR} foot={p.footR} facing={facing} c={NEAR} />
       <Arm shoulder={s.shoulderR} elbow={p.elbowR} hand={p.handR} c={NEAR} />
 
-      {/* the coach's own face */}
-      <image
-        href={FACE_SRC}
-        width={size}
-        height={size}
-        x={p.head[0] - size * cx}
-        y={p.head[1] - size * cy}
-        transform={`rotate(${headDeg.toFixed(1)} ${f1(p.head[0])} ${f1(p.head[1])})`}
+      {/* plain dummy head: close-cropped hair over the crown/back, ear in side view */}
+      <circle cx={p.head[0]} cy={p.head[1]} r="11" fill={SKIN} {...INK} />
+      <path
+        d={facing
+          ? `M${f1(p.head[0] + 5.3)},${f1(p.head[1] - 9.2)}A10.6,10.6 0 0 0 ${f1(p.head[0] - 9.2)},${f1(p.head[1] + 5.3)}`
+            + `Q${f1(p.head[0] - 2)},${f1(p.head[1] - 3)} ${f1(p.head[0] + 5.3)},${f1(p.head[1] - 9.2)}Z`
+          : `M${f1(p.head[0] - 10.6)},${f1(p.head[1] - 1)}A10.6,10.6 0 0 1 ${f1(p.head[0] + 10.6)},${f1(p.head[1] - 1)}`
+          + `Q${f1(p.head[0])},${f1(p.head[1] - 7)} ${f1(p.head[0] - 10.6)},${f1(p.head[1] - 1)}Z`}
+        fill={HAIR}
+        transform={`rotate(${f1((Math.atan2(tilt[0], -tilt[1]) * 180) / Math.PI)} ${f1(p.head[0])} ${f1(p.head[1])})`}
       />
+      {facing === 1 && <ellipse cx={p.head[0] - 2} cy={p.head[1] + 1.5} rx="2.2" ry="3" fill={SKIN_SHADE} {...INK} strokeWidth={0.8} />}
     </svg>
   );
 }
